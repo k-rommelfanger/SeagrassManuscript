@@ -7,7 +7,6 @@ editor_options:
   chunk_output_type: console
 ---
 
-
 This is looking at the historical seagrass data, and creating the nMDS visualization
 ```{r Seagrass nMDS}
 library(tidyverse)

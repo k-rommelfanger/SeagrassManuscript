@@ -1,0 +1,109 @@
+---
+title: "Diversity Figure"
+author: "Kaitlin Rommelfanger"
+date: "2023-12-13"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r}
+library(tidyverse)
+
+finaldiversityplots<- read.csv("Data/WeFixedItAnalyzeMe.csv")
+
+#adding a column for fish density, total number of fish divided by the area of the transect
+finaldiversityplots<-finaldiversityplots%>%
+  mutate(density=N/100)
+
+#add the column with the square root of richness because we transfromed the data for the species richness data for the ANOVA 
+
+finaldiversityplots$rsqrt<-(sqrt(finaldiversityplots$Species_Richness))
+
+#add our seagrass categories to the dataframe
+finaldiversityplots<-finaldiversityplots %>% 
+  mutate(totalgrass= (PCovHalophila+
+                      PCovThalassia+
+                      PCovHalodule+
+                      PCovSyringodium)) %>% 
+  mutate(PerHalTotal=(PCovHalophila/totalgrass))
+
+##Nas were generated on three transects where there was no seagrass we are only interested in looking at the differences when seagrass is present, removing these three transects
+finaldiversityplots<-finaldiversityplots%>%
+  filter(totalgrass!=0)
+
+##Make the depth bin categories, we know that deeper than 15 meters there is no native seagrasses, and we want to separate the transects below 15 meters into two groups, ones that are 100% halophila, and ones that are not 100% halophila and contain native seagrasses, and then select for column that we need for further analysis
+
+
+finaldiversityplots<- finaldiversityplots%>% 
+       mutate(dhcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))
+
+
+#species richness plot first
+
+RichnessFinal<-finaldiversityplots%>%
+    ggplot(names=labels, aes(x=dhcat, y=rsqrt, fill=dhcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab("Square Root of Species Richness (# unique species)")+#no y axis lables
+  ggtitle("Species Richness")+
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+
+  geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=4.3, label="a")+#add first letter, family and fontface change font and remove bold
+  geom_text(aes(family="serif", fontface="plain", label="ab"),x= "hal" , y=4.0)+#add second letter
+  geom_text(aes(family="serif", fontface="plain"), x= "native" , y=3.2, label="b")+#add third letter 
+    ylim(1,4.5)+#manually set y axis 
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no legend, gridlines or grey background, centered title
+
+  
+ 
+
+RichnessFinal
+
+#simpsons diversity plot
+
+SimpsonsFinal<-finaldiversityplots%>%
+    ggplot(names=labels, aes(x=dhcat, y=simpsons, fill=dhcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab("Simpsons Index of Diversity ")+#no y axis lables
+  ggtitle("Simpsons Index of Diversity")+
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+ 
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no gridlines or grey background, centered title
+ 
+SimpsonsFinal
+
+#Density Plot
+
+DenseFinal<-finaldiversityplots%>%
+    ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab("Fish Density (# individuals/100m^2)")+#no y axis lables
+  ggtitle("Fish Density")+
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+ 
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no legend, gridlines or grey background, centered title
+ 
+DenseFinal
+
+#Three Plots Combined
+
+DiversityPlot<-RichnessFinal+DenseFinal+SimpsonsFinal
+
+DiversityPlot
+```
+
+
+
+
+
+
+

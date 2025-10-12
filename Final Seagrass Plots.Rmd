@@ -1,0 +1,350 @@
+---
+title: "Final Seagrass Plots"
+author: "Kaitlin Rommelfanger"
+date: "2023-12-13"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r Macroalgae}
+macroalgaecheck<-finalanalyze1
+mean(macroalgaecheck$PCovMacroalgae)
+#5.91%
+
+macroalgaecheck<-macroalgaecheck%>%
+  filter(PCovMacroalgae!=0)
+
+mean(macroalgaecheck$PCovMacroalgae)
+#7.97%
+```
+
+
+
+```{r Seagrass nMDS}
+#libraries needed
+library(tidyverse)
+library(vegan)#nMDS
+library(RColorBrewer)#color options for ggplot
+
+#read in csv
+seagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+
+#there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
+seagrass[is.na(seagrass)] <- 0 
+
+#calculate the average percent cover of each seagrass for each transect
+avggrass<-seagrass%>%group_by(Year, Transect)%>%
+  summarise(Thalassia=mean(T.testudinum),
+            Halophila=mean(Halophilastipulacae), 
+            Halodule=mean(H.wrightii), 
+            Syringodium=mean(S.filiforme))
+
+#make nMDS frame, this includes the year (will pull year locations from here to plot)
+GnMDSy<-avggrass%>%select(Thalassia,Halophila,Halodule,Syringodium)
+
+# removing year, to run the nMDS
+GnMDS<-GnMDSy[,-1]
+
+#now we run the nMDS
+grass_NMDS <- metaMDS(GnMDS, distance = "euclidean",k = 2, trymax = 100)
+#Had to use euclidean method instead of bray due to the number of 0s in        the dataset
+
+##pulling the species locations out of the NMDS (x and y)
+grass_year <- as.data.frame(grass_NMDS$species)
+
+# this line is pulling the species names and linking them to thier location
+grass_year$sp <- rownames(grass_NMDS$species)
+
+
+##Making a dataframe with the categories (Year)
+  grass.cont <- as.data.frame(grass_NMDS$points)
+  grass.cont$Year = GnMDSy$Year
+
+#making vectors of the points for each year  
+year1 <- grass.cont[grass.cont$Year == 2009, ][chull(grass.cont[grass.cont$Year == 2009, c("MDS1", "MDS2")]), ]
+
+year2 <- grass.cont[grass.cont$Year == 2010, ][chull(grass.cont[grass.cont$Year == 2010, c("MDS1", "MDS2")]), ]
+
+year3 <- grass.cont[grass.cont$Year == 2011, ][chull(grass.cont[grass.cont$Year == 2011, c("MDS1", "MDS2")]), ]
+
+year4 <- grass.cont[grass.cont$Year == 2012, ][chull(grass.cont[grass.cont$Year == 2012, c("MDS1", "MDS2")]), ]
+
+year5 <- grass.cont[grass.cont$Year == 2013, ][chull(grass.cont[grass.cont$Year == 2013, c("MDS1", "MDS2")]), ]
+
+year6 <- grass.cont[grass.cont$Year == 2014, ][chull(grass.cont[grass.cont$Year == 2014, c("MDS1", "MDS2")]), ]
+
+year7 <- grass.cont[grass.cont$Year == 2015, ][chull(grass.cont[grass.cont$Year == 2015, c("MDS1", "MDS2")]), ]
+
+year8 <- grass.cont[grass.cont$Year == 2016, ][chull(grass.cont[grass.cont$Year == 2016, c("MDS1", "MDS2")]), ]
+
+year9 <- grass.cont[grass.cont$Year == 2017, ][chull(grass.cont[grass.cont$Year == 2017, c("MDS1", "MDS2")]), ]
+
+year10 <- grass.cont[grass.cont$Year == 2018, ][chull(grass.cont[grass.cont$Year == 2018, c("MDS1", "MDS2")]), ]
+
+year11 <- grass.cont[grass.cont$Year == 2019, ][chull(grass.cont[grass.cont$Year == 2019, c("MDS1", "MDS2")]), ]
+
+year12 <- grass.cont[grass.cont$Year == 2020, ][chull(grass.cont[grass.cont$Year == 2020, c("MDS1", "MDS2")]), ]
+
+year13 <- grass.cont[grass.cont$Year == 2021, ][chull(grass.cont[grass.cont$Year == 2021, c("MDS1", "MDS2")]), ]
+
+year14 <- grass.cont[grass.cont$Year == 2022, ][chull(grass.cont[grass.cont$Year == 2022, c("MDS1", "MDS2")]), ]
+
+##Bind together to make a dataframe
+yeardata <- rbind(year1, year2, year3, year4, year5, year6, year7, year8, year9, year10, year11, year12, year13, year14)
+
+
+##Plot by Points##
+point_plot<-ggplot(grass.cont) + 
+  geom_point(aes(x = MDS1, y = MDS2,fill = as.factor(Year)),color= "black", pch=21, size = 3) +
+  theme_classic() +
+  labs(color = "Year", fill = "Year") +
+  guides(color = guide_legend(nrow = 1), fill = guide_legend(nrow = 1)) +
+theme(panel.border = element_rect(fill = NA),
+legend.position = "bottom")+ 
+  geom_label(data = grass_year, aes(x = MDS1, y = MDS2, label = sp), colour = c("black","black","black","black"),label.size = NA, alpha = 0.3, size=7)+annotate(geom="text", x=0.425, y=0.9, label="stress=0.061", fontface="bold", size = unit(5, "pt"))
+
+point_plot
+
+
+grass.cont$Year<-as.numeric(grass.cont$Year)
+
+#final plot, this makes the labels on the axes larger
+sg_newplot<-point_plot+theme(axis.text = element_text(size = 11))+theme(legend.text = element_text(size = 11))
+
+sg_newplot
+
+#this is me messing around to try and see if I can make the seagrass NMDS on a color gradient, which will be easier to understand 
+
+green_palette <- colorRampPalette(c("#CC79A7", "#F0E442"))(14)
+
+
+point_plot1 <- ggplot(grass.cont) + 
+  geom_point(aes(x = MDS1, y = MDS2, fill = as.numeric(Year)), color = "black", pch = 21, size = 3) + 
+  theme_classic() + 
+  labs(fill = "Year") + 
+  guides(fill = guide_colorbar(nrow = 1, barwidth=15, barheight=1)) + 
+  scale_fill_gradientn(colors = green_palette) + 
+  theme(panel.border = element_rect(fill = NA), 
+        legend.position = "bottom") + 
+  geom_label(data = grass_year, aes(x = MDS1, y = MDS2, label = sp), colour = "black", label.size = NA, alpha = 0.3, size = 7) + 
+  annotate(geom = "text", x = 0.425, y = 0.9, label = "stress=0.061", fontface = "bold", size = unit(5, "pt"))
+
+point_plot1
+                  
+```
+
+```{r Total Seagrass Boxplot}
+
+library(tidyverse)
+library(patchwork)
+
+seagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+
+#there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
+seagrass[is.na(seagrass)] <- 0 
+
+#calculate the average percent cover of each seagrass for each transect, and remove 2009, due to lack of replication 
+
+avggrass<-seagrass%>%group_by(Year, Transect)%>%
+  summarise(Thalassia=mean(T.testudinum), 
+            Halophila=mean(Halophilastipulacae), 
+            Halodule=mean(H.wrightii), 
+            Syringodium=mean(S.filiforme))%>%
+  mutate(totalpcov=(Thalassia+Halophila+Halodule+Syringodium), nativecov=(Thalassia+Halodule+Syringodium))%>%
+  filter(!Year=="2009")
+
+#make year a factor 
+avggrass$Year<-as.factor(avggrass$Year)
+
+#make the plot
+Total<-avggrass%>%
+  ggplot()+
+   geom_boxplot(aes(Year, totalpcov, group=Year),fill="yellowgreen")+
+  ylab("Total Seagrass Percent Cover (%)")+
+  ggtitle(label="Total Seagrass Cover")+
+  ylim(0,100)+
+  theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(size = 8))+#no gridlines or grey background
+   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=15, label="ab")+#add second letter
+   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=15, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=15, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=30, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=50, label="abcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=100, label="bcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=100, label="d")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=45, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=90, label="bcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=90, label="bcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=90, label="cd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=100, label="d")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=85, label="bcd")
+
+Total
+
+#Total Native Cover Plot
+
+Native<-avggrass%>%
+  ggplot()+
+   geom_boxplot(aes(Year, nativecov, group=Year),fill="#CC79A7")+
+  ylab("Native Seagrass Percent Cover (%)")+
+  ggtitle(label="Total Native Seagrass")+
+  ylim(0,100)+
+  theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(size = 8))+#no gridlines or grey background
+   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=15, label="abc")+#add second letter
+   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=15, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=15, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=30, label="c")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=45, label="ac")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=25, label="ac")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=25, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=25, label="b")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=25, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=25, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=25, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=25, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=25, label="ab")
+
+Native 
+
+#Halophila Plot
+
+Halo<-avggrass%>%
+  ggplot()+
+   geom_boxplot(aes(Year, Halophila, group=Year),fill="#F0E442")+
+  ylab("H. stipulacae Percent Cover (%)")+
+  ylim(0,100)+
+  ggtitle(label="H. stipulacea Cover")+
+  theme(panel.background = element_rect(fill = "white", colour = "grey50"),axis.text.x = element_text(size = 8),plot.title = element_text(hjust = 0.5))+#no gridlines or grey background
+   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=10, label="a")+#add second letter
+   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=10, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=10, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=10, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=37.5, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=97, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=97, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=35, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=90, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=90, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=90, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=97, label="c")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=85, label="bc")
+
+Halo
+
+#patchwork the plots together
+PatchPlot<-Native+Halo+Total
+
+PatchPlot
+
+#marilyn feedback reorder
+PatchPlot1<-Total+Native+Halo
+PatchPlot1
+
+#patchwork hates me 
+library(gridExtra)
+PatchPlot2<-grid.arrange(Total, Native, Halo, ncol=3)
+PatchPlot2
+
+```
+
+Logistic regression plots
+
+```{r Logit native }
+
+finalanalyze1 <- read.csv("Final Code and Plots/Data/WeFixedItAnalyzeMe.csv")
+
+#running the logit to determine the depth that natives stop growing 
+
+#this is making a new column that based on presence or absence of native seagrasses (so we have binary data to run the logit) if amount of native cover is zero, then 0 if not put one 
+finalanalyze1$pres <- ifelse(finalanalyze1$nativecover==0, '0', '1')
+
+#redefine pres column as numeric
+finalanalyze1$pres<-as.numeric(finalanalyze1$pres)
+
+#plot the results 
+native<-ggplot(finalanalyze1, aes(x = depth, y = pres)) +
+  geom_jitter(alpha = 0.4, width = 0, height = 0.01) +
+  geom_smooth(method = "glm", method.args = list(family=binomial),
+              color = "#CC79A7") +
+  labs(x = "Depth", y = "Native Seagrass Presence") +
+    theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+
+  theme(legend.position = "none", text = element_text(size = 10))+ #no legend font size 10 
+   annotate(geom="text", x=17, y=0.75, label=" y= -0.19877x+1.161700\nPseudo R2=0.2541301")
+
+native
+
+#gray shading is 95% confidence interval for the line
+
+```
+
+
+
+
+
+```{r Logit Halophila}
+library(gridExtra)
+
+#make a column that shows presence or absence of halophila 
+finalanalyze1$halpres <- ifelse(finalanalyze1$PCovHalophila==0, '0', '1')
+
+#make numeric so plot works
+finalanalyze1$halpres<-as.numeric(finalanalyze1$halpres)
+
+#plot
+
+geom.text.size=10
+
+halo<-ggplot(finalanalyze1, aes(x = depth, y = halpres)) +
+  geom_jitter(alpha = 0.4, width = 0, height = 0.01) +
+  geom_smooth(method = "glm", method.args = list(family=binomial),
+              color = "#F0E442") +
+  labs(x = "Depth", y = "H. Stipulacea Presence") +
+  theme(legend.position = "none", text = element_text(size = 10))+
+   theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+
+  annotate(geom="text", x=17, y=0.75, label="y = 0.084x+1.49\nPseudo R2=0.0485")
+
+
+halo
+
+logits<-native+halo
+
+logits
+
+#switching order of plots
+logits1<-halo+native
+logits1
+
+```
+
+```{r}
+
+#remake plots without the equation of the line
+halo1<-ggplot(finalanalyze1, aes(x = depth, y = halpres)) +
+  geom_jitter(alpha = 0.4, width = 0, height = 0.01) +
+  geom_smooth(method = "glm", method.args = list(family=binomial),
+              color = "#F0E442") +
+  labs(x = "Depth", y = "H. Stipulacea Presence") +
+  theme(legend.position = "none", text = element_text(size = 10))+
+   theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+
+  annotate(geom="text", x=17, y=0.75, label="Pseudo R2=0.0485")
+
+
+halo1
+
+native1<-ggplot(finalanalyze1, aes(x = depth, y = pres)) +
+  geom_jitter(alpha = 0.4, width = 0, height = 0.01) +
+  geom_smooth(method = "glm", method.args = list(family=binomial),
+              color = "#CC79A7") +
+  labs(x = "Depth", y = "Native Seagrass Presence") +
+    theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+
+  theme(legend.position = "none", text = element_text(size = 10))+ #no legend font size 10 
+   annotate(geom="text", x=17, y=0.75, label="Pseudo R2=0.2541301")
+
+native1
+
+
+logits2<-grid.arrange(halo1,native1, ncol=2)
+logits2
+```
+

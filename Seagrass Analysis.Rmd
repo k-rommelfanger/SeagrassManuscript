@@ -1,0 +1,537 @@
+---
+title: "Seagrass Analysis"
+author: "Kaitlin Rommelfanger"
+date: "2023-12-14"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+This is looking at the historical seagrass data, and creating the nMDS visualization
+```{r Seagrass nMDS}
+library(tidyverse)
+library(vegan)#nMDS
+library(RColorBrewer)#color options for ggplot
+
+##Load data
+seagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+
+#there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
+seagrass[is.na(seagrass)] <- 0 
+
+#calculate the average percent cover of each seagrass for each transect
+avggrass<-seagrass%>%group_by(Year, Transect)%>%
+  summarise(Thalassia=mean(T.testudinum),
+            Halophila=mean(Halophilastipulacae), 
+            Halodule=mean(H.wrightii), 
+            Syringodium=mean(S.filiforme))
+
+#turn this into a table so I can add it to the supplemental
+
+write.table(avggrass, file="historicalgrasstable")
+
+#make nMDS frame, this includes the year (will pull year locations from here to plot)
+GnMDSy<-avggrass%>%select(Thalassia,Halophila,Halodule,Syringodium)
+
+# removing year, to run the nMDS
+GnMDS<-GnMDSy[,-1]
+
+
+
+#now we run the nMDS
+grass_NMDS <- metaMDS(GnMDS, distance = "euclidean",k = 2, trymax = 100)
+#Had to use euclidean method instead of bray due to the number of 0s in        the dataset
+
+#call results
+grass_NMDS
+  #Stress = 0.06117741
+
+
+#stress plot
+  stressplot(grass_NMDS)
+  #r^2 = 0.996
+
+##Basic Plot
+plot(grass_NMDS)
+
+##pulling the species locations out of the NMDS (x and y)
+grass_year <- as.data.frame(grass_NMDS$species)
+
+# this line is pulling the species names and linking them to thier location
+grass_year$sp <- rownames(grass_NMDS$species)
+
+
+##Making a dataframe with the categories (Year)
+  grass.cont <- as.data.frame(grass_NMDS$points)
+  grass.cont$Year = GnMDSy$Year
+
+#making vectors of the points for each year  
+year1 <- grass.cont[grass.cont$Year == 2009, ][chull(grass.cont[grass.cont$Year == 2009, c("MDS1", "MDS2")]), ]
+
+year2 <- grass.cont[grass.cont$Year == 2010, ][chull(grass.cont[grass.cont$Year == 2010, c("MDS1", "MDS2")]), ]
+
+year3 <- grass.cont[grass.cont$Year == 2011, ][chull(grass.cont[grass.cont$Year == 2011, c("MDS1", "MDS2")]), ]
+
+year4 <- grass.cont[grass.cont$Year == 2012, ][chull(grass.cont[grass.cont$Year == 2012, c("MDS1", "MDS2")]), ]
+
+year5 <- grass.cont[grass.cont$Year == 2013, ][chull(grass.cont[grass.cont$Year == 2013, c("MDS1", "MDS2")]), ]
+
+year6 <- grass.cont[grass.cont$Year == 2014, ][chull(grass.cont[grass.cont$Year == 2014, c("MDS1", "MDS2")]), ]
+
+year7 <- grass.cont[grass.cont$Year == 2015, ][chull(grass.cont[grass.cont$Year == 2015, c("MDS1", "MDS2")]), ]
+
+year8 <- grass.cont[grass.cont$Year == 2016, ][chull(grass.cont[grass.cont$Year == 2016, c("MDS1", "MDS2")]), ]
+
+year9 <- grass.cont[grass.cont$Year == 2017, ][chull(grass.cont[grass.cont$Year == 2017, c("MDS1", "MDS2")]), ]
+
+year10 <- grass.cont[grass.cont$Year == 2018, ][chull(grass.cont[grass.cont$Year == 2018, c("MDS1", "MDS2")]), ]
+
+year11 <- grass.cont[grass.cont$Year == 2019, ][chull(grass.cont[grass.cont$Year == 2019, c("MDS1", "MDS2")]), ]
+
+year12 <- grass.cont[grass.cont$Year == 2020, ][chull(grass.cont[grass.cont$Year == 2020, c("MDS1", "MDS2")]), ]
+
+year13 <- grass.cont[grass.cont$Year == 2021, ][chull(grass.cont[grass.cont$Year == 2021, c("MDS1", "MDS2")]), ]
+
+year14 <- grass.cont[grass.cont$Year == 2022, ][chull(grass.cont[grass.cont$Year == 2022, c("MDS1", "MDS2")]), ]
+
+##Bind together to make a dataframe
+yeardata <- rbind(year1, year2, year3, year4, year5, year6, year7, year8, year9, year10, year11, year12, year13, year14)
+
+
+##Plot by Points##
+point_plot<-ggplot(grass.cont) + 
+  geom_point(aes(x = MDS1, y = MDS2,fill = as.factor(Year)),color= "black", pch=21, size = 3) +
+  theme_classic() +
+  labs(color = "Year", fill = "Year") +
+  guides(color = guide_legend(nrow = 1), fill = guide_legend(nrow = 1)) +
+theme(panel.border = element_rect(fill = NA),
+legend.position = "bottom")+ 
+  geom_label(data = grass_year, aes(x = MDS1, y = MDS2, label = sp), colour = c("black","black","black","black"),label.size = NA, alpha = 0.3, size=5)+annotate(geom="text", x=0.425, y=0.9, label="stress=0.061", fontface="bold")
+
+point_plot
+
+
+#final plot, make labels on the axes larger
+sg_newplot<-point_plot+theme(axis.text = element_text(size = 11))+theme(legend.text = element_text(size = 11))
+
+sg_newplot
+ 
+```
+
+
+Using tidyverse to look a the total number of transects each year in the historical data 
+```{r number of transects per year}
+
+seayear<-seagrass%>%group_by(Year)%>%
+  summarise(length(unique(Transect)))
+
+View(seayear)
+```
+
+Looking at differences in percent cover of Halophila between years 
+```{r Halophila KW}
+library(FSA)#for DunnPost Hoc
+library(rcompanion)#for cldList function
+library(patchwork)#to combine plots
+
+#import csv
+seagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+
+
+#there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
+seagrass[is.na(seagrass)] <- 0 
+
+#calculate the average percent cover of each seagrass for each transect, remove 2009 because only one replicate
+avggrass<-seagrass%>%group_by(Year, Transect)%>%
+  summarise(Thalassia=mean(T.testudinum), 
+            Halophila=mean(Halophilastipulacae), 
+            Halodule=mean(H.wrightii), 
+            Syringodium=mean(S.filiforme))%>%
+  filter(!Year=="2009")
+
+
+#bartlett test
+bartlett.test(Halophila ~ Year, avggrass)
+#not significant, fail, nonparametric here we come
+
+#now testing for significant differences between years
+kruskal.test(Halophila~Year, data=avggrass)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  Halophila by Year
+#Kruskal-Wallis chi-squared = 94.924, df = 12, p-value = 5.461e-15
+
+#now we run post hoc analysis
+HalophilaDunn=dunnTest(Halophila ~ Year,
+  data = avggrass)
+
+HalophilaDunn
+
+
+#pull info from dunn test to make letter comparison
+Halo = HalophilaDunn$res
+
+cldList(comparison = Halo$Comparison,
+        p.value    = Halo$P.adj,
+        threshold  = 0.05)
+
+#   Group Letter MonoLetter
+#1     21      a        a  
+#2    211      a        a  
+#3    212      a        a  
+#4    213      a        a  
+#5    214     ab        ab 
+#6    215    abc        abc
+#7    216     bc         bc
+#8    217     ab        ab 
+#9    218     bc         bc
+#10   219     bc         bc
+#11    22     bc         bc
+#12   221      c          c
+#13   222     bc         bc
+
+#make year a factor so we can use it as a location to add letters to the plot
+avggrass$Year<-as.factor(avggrass$Year)
+
+Halo<-avggrass%>%
+  ggplot()+
+   geom_boxplot(aes(Year, Halophila, group=Year),fill="#F0E442")+
+  ylab("Halophila Percent Cover")+
+  ylim(0,100)+
+   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=10, label="a")+#add second letter
+   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=10, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=10, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=10, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=37.5, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=97, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=97, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=35, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=90, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=90, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=90, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=97, label="c")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=85, label="bc")
+
+Halo
+
+```
+
+Looking at differences of total percent cover over time
+
+```{r Total Percent Cover KW}
+
+Tseagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+
+#there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
+Tseagrass[is.na(Tseagrass)] <- 0 
+
+#calculate the average percent cover of each seagrass for each transect
+Tavggrass<-Tseagrass%>%group_by(Year, Transect)%>%
+  summarise(Thalassia=mean(T.testudinum), 
+            Halophila=mean(Halophilastipulacae), 
+            Halodule=mean(H.wrightii), 
+            Syringodium=mean(S.filiforme))%>%
+  mutate(totalpcov=(Thalassia+Halophila+Halodule+Syringodium), nativecov=(Thalassia+Halodule+Syringodium))%>%
+  filter(!Year=="2009")
+
+
+#total grass
+bartlett.test(totalpcov~Year, Tavggrass)
+#nonparametric
+
+kruskal.test(totalpcov~Year, Tavggrass)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  totalpcov by Year
+#Kruskal-Wallis chi-squared = 88.923, df = 12, p-value = 7.976e-14
+
+#posthoc
+AllDunn=dunnTest(totalpcov ~ Year,
+  data = Tavggrass)
+
+AllDunn
+
+All = AllDunn$res
+
+cldList(comparison = All$Comparison,
+        p.value    = All$P.adj,
+        threshold  = 0.05)
+
+#Group Letter MonoLetter
+#1     21     ab       ab  
+#2    211      a       a   
+#3    212     ab       ab  
+#4    213    abc       abc 
+#5    214   abcd       abcd
+#6    215    bcd        bcd
+#7    216      d          d
+#8    217     ab       ab  
+#9    218    bcd        bcd
+#10   219    bcd        bcd
+#11    22     cd         cd
+#12   221      d          d
+#13   222    bcd        bcd
+
+Tavggrass$Year<-as.factor(Tavggrass$Year)
+
+Total<-Tavggrass%>%
+  ggplot()+
+   geom_boxplot(aes(Year, totalpcov, group=Year),fill="darkgreen")+
+  ylab("Total Seagrass Percent Cover (%)")+
+  ylim(0,100)+
+  theme_bw()+
+  theme_bw()+
+   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=15, label="ab")+#add second letter
+   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=15, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=15, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=30, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=50, label="abcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=100, label="bcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=100, label="d")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=45, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=90, label="bcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=90, label="bcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=90, label="cd")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=100, label="d")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=85, label="bcd")
+
+Total
+```
+
+Looking at the changes in percent cover of native seagrass over time
+
+```{r Native Percent Cover KW}
+#look at native grasses pooled 
+bartlett.test(nativecov ~ Year, Tavggrass)
+#not significant, nonparametric
+
+kruskal.test(nativecov~Year, Tavggrass)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  nativecov by Year
+#Kruskal-Wallis chi-squared = 51.95, df = 12, p-value = 6.326e-07
+
+NativeDunn=dunnTest(nativecov ~ Year,
+  data = Tavggrass)
+
+NativeDunn
+
+
+#pull info from dunn test to make letter comparison
+Nat = NativeDunn$res
+
+cldList(comparison = Nat$Comparison,
+        p.value    = Nat$P.adj,
+        threshold  = 0.05)
+
+#  Group Letter MonoLetter
+#1     21    abc        abc
+#2    211     ab        ab 
+#3    212    abc        abc
+#4    213      c          c
+#5    214     ac        a c
+#6    215     ac        a c
+#7    216    abc        abc
+#8    217      b         b 
+#9    218     ab        ab 
+#10   219    abc        abc
+#11    22     ab        ab 
+#12   221    abc        abc
+#13   222     ab        ab 
+
+
+
+Tavggrass$Year<-as.factor(Tavggrass$Year)
+
+Native<-Tavggrass%>%
+  ggplot()+
+   geom_boxplot(aes(Year, nativecov, group=Year),fill="#CC79A7")+
+  ylab(" Percent Cover of Native Seagrasses (%)")+
+  ylim(0,100)+
+  theme_bw()+
+   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=15, label="abc")+#add second letter
+   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=15, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=15, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=30, label="c")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=45, label="ac")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=25, label="ac")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=25, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=25, label="b")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=25, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=25, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=25, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=25, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=25, label="ab")
+
+Native 
+
+PatchPlot<-Native+Halo+Total
+
+PatchPlot
+
+```
+
+Now transitioning to looking at the data from 2023 surveys 
+
+Looking at the effect of depth on presence or absence of native seagrasses
+
+```{r Native Logistic Regression}
+
+library(DHARMa)#for simulate residuals, to check assumptions
+
+finalanalyze1 <- read.csv("Final Code and Plots/Data/WeFixedItAnalyzeMe.csv")
+
+#running the logit to determine the depth that natives stop growing 
+
+#this is making a new column that based on presence or absence of native seagrasses (so we have binary data to run the logit) if amount of native cover is zero, then 0 if not put one 
+finalanalyze1$pres <- ifelse(finalanalyze1$nativecover==0, '0', '1')
+
+#make our new column pres a factor so we can run the logit 
+finalanalyze1$pres<-as.factor(as.character(finalanalyze1$pres))
+
+#creating the model
+native01<-glm(pres ~depth, data=finalanalyze1, family="binomial")
+
+#check assumptions
+native01resid<-simulateResiduals(native01)
+plot(native01resid)
+
+#looks good press onward
+summary(native01)
+#significant negative effect of depth on presence of native seagrasses p=0.000465
+#AIC=58.326 z=0.60
+
+#Call:
+#glm(formula = pres ~ depth, family = "binomial", data = finalanalyze1)
+
+#Deviance Residuals: 
+#    Min       1Q   Median       3Q      Max  
+#-1.5680  -0.6124  -0.3090   0.8352   1.8239  
+
+#Coefficients:
+#            Estimate Std. Error z value Pr(>|z|)    
+#(Intercept)  1.16170    0.60103   1.933 0.053257 .  
+#depth       -0.19877    0.05679  -3.500 0.000465 ***
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#(Dispersion parameter for binomial family taken to be 1)
+
+#    Null deviance: 72.836  on 61  degrees of freedom
+#Residual deviance: 54.326  on 60  degrees of freedom
+#AIC: 58.326
+
+#Number of Fisher Scoring iterations: 5
+
+
+#now creating our simulated r squared 
+log.likelihoodNull <- native01$null.deviance/-2
+log.likelihoodResidual <- native01$deviance/-2
+PseudoR2 <- (log.likelihoodNull - log.likelihoodResidual) / log.likelihoodNull
+PseudoR2 #r squared is 0.2541301
+
+#need to be numberic to plot using geomsmooth, for some reason this is turning it to ones and twos, so i am going to remake the pres column 
+finalanalyze1$pres<-as.numeric(finalanalyze1$pres)
+
+#remake pres column
+finalanalyze1$pres1 <- ifelse(finalanalyze1$nativecover==0, '0', '1')
+finalanalyze1$pres1<-as.numeric(finalanalyze1$pres1)
+
+#plot the results 
+native<-ggplot(finalanalyze1, aes(x = depth, y = pres1)) +
+  geom_jitter(alpha = 0.4, width = 0, height = 0.01) +
+  geom_smooth(method = "glm", method.args = list(family=binomial),
+              color = "#CC79A7") +
+  labs(x = "Depth", y = "Native Seagrass Presence") +
+  theme_bw() +
+  theme(legend.position = "none")+
+  geom_text(aes(x = 20, y = 0.75, label = "y = y= -0.19877x+1.161700
+\nPseudo R2=0.2541301"))
+
+native
+
+#gray shading is 95% confidence interval for the line
+```
+
+looking at the effect of depth on the presence of halophila 
+
+```{r Logit Halophila}
+
+finalanalyze1 <- read.csv("Final Code and Plots/Data/WeFixedItAnalyzeMe.csv")
+
+#make a column that shows presence or absence of halophila 
+finalanalyze1$halpres <- ifelse(finalanalyze1$PCovHalophila==0, '0', '1')
+
+#make our new column pres a factor so we can run the logit 
+finalanalyze1$halpres<-as.factor(as.character(finalanalyze1$halpres))
+
+#creating the model
+hal01<-glm(halpres ~depth, data=finalanalyze1, family="binomial")
+
+#check assumptions
+
+hal01resid<-simulateResiduals(hal01)
+plot(hal01resid)
+
+#results
+summary(hal01)
+
+
+#Call:
+#glm(formula = halpres ~ depth, family = "binomial", data = finalanalyze1)
+
+#Deviance Residuals: 
+#    Min       1Q   Median       3Q      Max  
+#-2.6589   0.2676   0.3422   0.4681   0.6075  
+
+#Coefficients:
+#            Estimate Std. Error z value Pr(>|z|)  
+#(Intercept)  1.49296    0.79410   1.880   0.0601 .
+#depth        0.08464    0.06878   1.231   0.2185  
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#(Dispersion parameter for binomial family taken to be 1)
+
+#    Null deviance: 34.762  on 61  degrees of freedom
+#Residual deviance: 33.075  on 60  degrees of freedom
+#AIC: 37.075
+
+#Number of Fisher Scoring iterations: 5
+
+#now creating our simulated r squared 
+log.likelihoodNull <- hal01$null.deviance/-2
+log.likelihoodResidual <- hal01$deviance/-2
+PseudoR2 <- (log.likelihoodNull - log.likelihoodResidual) / log.likelihoodNull
+PseudoR2 #r squared is 0.04853213
+
+#need to be numberic to plot using geomsmooth, this doesnt work so remaking halpres column because when i try to make it numeric again it changes to 1 and 2
+finalanalyze1$halpres<-as.numeric(finalanalyze1$halpres)
+
+#remake column so it is numeric to plot
+finalanalyze1$halpres1 <- ifelse(finalanalyze1$PCovHalophila==0, '0', '1')
+finalanalyze1$halpres1<-as.numeric(finalanalyze1$halpres1)
+
+#plot
+
+halo<-ggplot(finalanalyze1, aes(x = depth, y = halpres1)) +
+  geom_jitter(alpha = 0.4, width = 0, height = 0.01) +
+  geom_smooth(method = "glm", method.args = list(family=binomial),
+              color = "#F0E442") +
+  labs(x = "Depth", y = "Halophila Presence") +
+  theme_bw() +
+  theme(legend.position = "none")+
+  geom_text(aes(x = 20, y = 0.75, label = "y = y= 0.084x+1.49
+\nPseudo R2=0.0485"))
+
+halo
+
+logits<-halo+native
+
+logits
+
+```

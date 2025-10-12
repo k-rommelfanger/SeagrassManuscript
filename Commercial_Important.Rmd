@@ -1,0 +1,99 @@
+---
+title: "Commercially Important Fish Figure"
+author: "Kaitlin Rommelfanger"
+date: "2024-06-17"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+
+AllMerged <- read.csv("Final Code and Plots/Data/AllMerged.csv")
+
+#Filter out commercially important species only 
+AllMerged$Scientific.Names<-as.factor(AllMerged$Scientific.Names)
+
+CommercialFish<-AllMerged%>%filter(Scientific.Names=="Ocyurus chrysurus"|Scientific.Names=="Lutjanus synagris"|Scientific.Names=="Lutjanus cyanopterus"|Scientific.Names=="Scarus taeniopterus"|Scientific.Names=="Sparisoma aurofrenatum"|Scientific.Names=="Sparisoma viride"|Scientific.Names=="Scarus iseri"|Scientific.Names=="Caranx crysos"|Scientific.Names=="Acanthurus bahianus"|Scientific.Names=="Acanthurus chirurgus")
+
+#make a column combinding p cov of all seagrasses and calculate percent of total that is halophila 
+CommercialFish<-CommercialFish %>% 
+  mutate(totalgrass= (CommercialFish$PCovHalophila+
+                      CommercialFish$PCovThalassia+
+                      CommercialFish$PCovHalodule+
+                      CommercialFish$PCovSyringodium)) %>% 
+  mutate(PerHalTotal=(CommercialFish$PCovHalophila/totalgrass))
+
+#make a column with seagrass categories 
+CommercialFish<-CommercialFish%>% 
+       mutate(dhcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))                                     
+                                     
+#juvenille size range of fish, checking to see if all the fish are juveniles  
+#Ocyurus chrysurus (26cm) NEED SOURCE
+#Lutjanus synagris (<23.4cm)
+#Lutjanus cyanopterus (55cm)
+#Scarus taeniopterus (17cm)
+#Sparisoma aurofrenatum (15cm)
+#Sparisoma viride (16cm)
+#Scarus iseri (16cm)
+#Caranx crysos  (27.4cm)
+#Acanthurus bahianus 15.5cm
+#Acanthurus chirurgus (17cm)
+
+#used this to figure out how many of the fish were juvenilles, found that all were except Cubera Snapper
+
+#CommercialFish<-CommercialFish%>%mutate(Juv=case_when((Size=="<2"|Size=="3-4cm"|Size=="2-3cm"|Size=="4-5cm"|Size=="6-10cm"|Size=="11-15cm")~"<15cm", (Size=="16-20cm")~"15-20cm", (Size=="21")~"21", (Size=="100")~"100"))
+
+#all fish are juvenilles except the Cubera snapper, so I am going to note that the cubera snapper is not juvenille in results/discussion
+
+
+#count number of fish of each species in each grouping, remove category with no seagrass, 
+CommercialFishWide<-CommercialFish%>%select(Scientific.Names, dhcat)%>%group_by(dhcat,Scientific.Names)%>%summarise(number=length(Scientific.Names))%>%pivot_wider(names_from = dhcat, values_from = number)%>%select(Scientific.Names,deep,hal,native)
+
+#replace NA with zero
+CommercialFishWide[is.na(CommercialFishWide)] <- 0
+
+
+CommercialFishWide$deep<-as.numeric(CommercialFishWide$deep)
+CommercialFishWide$TotalFish<-as.numeric(CommercialFishWide$TotalFish)
+
+#Calculating proportion of total fish in each category 
+CommercialFishWide<-CommercialFishWide%>%mutate(TotalFish=(deep+hal+native))%>%mutate(">15m"=(deep/TotalFish), "<15m & 100% Halophila"=(hal/TotalFish), "<15m & Natives Present"=(native/TotalFish))
+
+#filter for proportion plot
+Proportion<-CommercialFishWide%>%select(Scientific.Names,`<15m & Natives Present`,`<15m & 100% Halophila`,`>15m`)
+  
+#filter for count plot
+TotalCount<-CommercialFishWide%>%select(Scientific.Names,deep, hal, native)
+
+#pivot everything long
+ProportionLong<-Proportion%>%pivot_longer(!Scientific.Names,names_to ="Category", values_to = "Proportion")
+
+CountLong<-TotalCount%>%pivot_longer(!Scientific.Names,names_to ="Category", values_to = "Proportion")
+
+#plot total count of all commercially important fish 
+FishPlotCount<-CountLong%>%
+  ggplot(aes(x=Scientific.Names, y=Proportion, fill=Category))+
+  geom_bar(position="stack", stat="identity")+
+  xlab("Commercially Important Species")+
+  ylab("Number of Fish Observed")+
+  scale_fill_manual(name = "Seagrass Category", labels = c("> 15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+
+  scale_color_manual(name = "Seagrass Category", labels = c("> 15m", "< 15m & 100% Halophila","and < 15m & Native Present "), values = c("#56B4E9","#F0E442","#CC79A7"))+
+  theme_classic()+
+  theme(panel.border = element_rect(fill = NA),axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  
+
+FishPlotCount
+
+
+#we decided we like the total count better than the proportion
+FishPlotProportion<-ProportionLong%>%
+  ggplot(aes(x=Scientific.Names, y=Proportion, fill=Category))+
+  geom_bar(position="stack", stat="identity")
+FishPlotProportion
+```
+
+

@@ -1,0 +1,1392 @@
+---
+title: "Fish Community Analysis"
+author: "Kaitlin Rommelfanger"
+date: "2023-12-14"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## Things to add
+1) Set seed for nMDS
+2) Paper name for why we broke apart the snapper
+3) how to finalize the simper, some families are borderline significant, sometimes when you run it they are , and sometime they are not what is the protocol to make this
+4) need help with the labrisomidae family, the Dunn Results are weird
+
+
+
+Categorical test, to test for differences in for the three categories, so we are going to look at
+
+1) Species Richness
+2) Simpsons Index of Diversity
+3) Total Fish Density
+
+Across the three seagrass categories
+1. >15m
+2. <15m, 100% Halophila
+3. <15m, native present
+
+```{r Richness Anova}
+#csvs needed
+finalanalyze1 <- read.csv("Data/WeFixedItAnalyzeMe.csv")
+
+#libraries
+library(tidyverse)
+library(agricolae)#Tukey post hoc test
+
+#add our seagrass categories to the dataframe
+finalanalyze1<-finalanalyze1 %>% 
+  mutate(totalgrass= (finalanalyze1$PCovHalophila+
+                      finalanalyze1$PCovThalassia+
+                      finalanalyze1$PCovHalodule+
+                      finalanalyze1$PCovSyringodium)) %>% 
+  mutate(PerHalTotal=(finalanalyze1$PCovHalophila/totalgrass))
+
+##Nas were generated on three transects where there was no seagrass, because cannot divide by zero, Making the NAs 0
+finalanalyze1<-finalanalyze1%>%
+  filter(totalgrass!=0)
+
+##Make the depth bin categories, we know that deeper than 15 meters there is no native seagrasses, and we want to separate the transects below 15 meters into two groups, ones that are 100% halophila, and ones that are not 100% halophila and contain native seagrasses, and then select for column that we need for further analysis
+finalanalyze1<- finalanalyze1%>% 
+       mutate(dhcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))%>%
+  select(Transect, dhcat, Species_Richness, simpsons)
+
+
+#Species Richness
+#visualize the data 
+
+Richness<-finalanalyze1%>%
+    ggplot(names=labels, aes(x=dhcat, y=Species_Richness, fill=dhcat))+
+  geom_boxplot(outlier.shape=2)
+
+
+Richness
+
+#check anova assumptions
+
+#equal variance, bartlet test
+bartlett.test(Species_Richness~dhcat, finalanalyze1)
+
+#	Bartlett test of homogeneity of variances
+
+#data:  Species_Richness by dhcat
+#Bartlett's K-squared = 2.8609, df = 2, p-value = 0.2392
+#we have equal variance, on to the next assumption
+
+#run the ANOVA to check the residuals
+RichnessANOVA <- aov(Species_Richness ~ dhcat, data = finalanalyze1)
+
+# then we can easily pull them out of the output
+aov_residuals <- residuals(RichnessANOVA)
+
+hist(aov_residuals)#looks pretty good
+
+shapiro.test(aov_residuals)
+#	Shapiro-Wilk normality test
+
+#data:  aov_residuals
+#W = 0.95313, p-value = 0.02357
+#not significant try transformations
+
+finalanalyze1$rsqrt<-(sqrt(finalanalyze1$Species_Richness))
+#check untransformed 
+hist(finalanalyze1$Species_Richness)
+#check transformed
+hist(finalanalyze1$rsqrt)
+
+#check assumpitons of transformed data
+bartlett.test(rsqrt~dhcat, finalanalyze1)
+
+#	Bartlett test of homogeneity of variances
+
+#data:  rsqrt by dhcat
+#Bartlett's K-squared = 0.7155, df = 2, p-value = 0.6992
+
+#run the ANOVA to check the residuals
+RichnessANOVAsr <- aov(rsqrt ~ dhcat, data = finalanalyze1)
+aov_residuals1 <- residuals(RichnessANOVAsr)
+hist(aov_residuals1)
+
+shapiro.test(aov_residuals1)
+
+#	Shapiro-Wilk normality test
+
+#data:  aov_residuals1
+#W = 0.97762, p-value = 0.3471
+#transformation worked!!! I can run an ANOVA!!!
+
+
+summary(RichnessANOVAsr)
+
+#            Df Sum Sq Mean Sq F value Pr(>F)  
+#dhcat        2  2.667  1.3335   4.936 0.0106 *
+#Residuals   56 15.128  0.2701                 
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Tukey <- HSD.test(RichnessANOVAsr, "dhcat")
+Tukey
+
+#$statistics
+#   MSerror Df     Mean       CV
+#  0.270146 56 2.467431 21.06465
+
+#$parameters
+#   test name.t ntr StudentizedRange alpha
+#  Tukey  dhcat   3         3.404809  0.05
+
+#$means
+#          rsqrt       std  r      Min      Max      Q25      Q50
+#deep   2.656619 0.5350819 27 1.732051 4.000000 2.236068 2.645751
+#hal    2.484874 0.5594027 15 1.732051 3.605551 2.118034 2.449490
+#native 2.151566 0.4543547 17 1.414214 2.828427 1.732051 2.000000
+#            Q75
+#deep   2.914214
+#hal    2.828427
+#native 2.449490
+
+#$comparison
+#NULL
+
+#$groups
+#          rsqrt groups
+#deep   2.656619      a
+#hal    2.484874     ab
+#native 2.151566      b
+
+#attr(,"class")
+#[1] "group"
+
+RichnessFinal<-finalanalyze1%>%
+    ggplot(names=labels, aes(x=dhcat, y=rsqrt, fill=dhcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab("Square Root of Species Richness ")+#no y axis lables
+  ggtitle("Species Richness")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+
+  geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=4.3, label="a")+#add first letter, family and fontface change font and remove bold
+  geom_text(aes(family="serif", fontface="plain", label="ab"),x= "hal" , y=4.0)+#add second letter
+  geom_text(aes(family="serif", fontface="plain"), x= "native" , y=3.2, label="b")+#add third letter 
+  theme(legend.position="none")+#removes legend 
+    ylim(1,4.5)#manually set y axis 
+  
+ 
+
+RichnessFinal
+
+```
+
+Now looking at the effect of categories on Simpsons index of diversity
+
+```{r Simpsons KW}
+#csvs needed
+finalanalyze1 <- read.csv("Data/WeFixedItAnalyzeMe.csv")
+
+#libraries
+library(tidyverse)
+library(agricolae)#Tukey post hoc test
+
+#add our seagrass categories to the dataframe
+finalanalyze1<-finalanalyze1 %>% 
+  mutate(totalgrass= (finalanalyze1$PCovHalophila+
+                      finalanalyze1$PCovThalassia+
+                      finalanalyze1$PCovHalodule+
+                      finalanalyze1$PCovSyringodium)) %>% 
+  mutate(PerHalTotal=(finalanalyze1$PCovHalophila/totalgrass))
+
+##Nas were generated on three transects where there was no seagrass, because cannot divide by zero, Making the NAs 0
+finalanalyze1<-finalanalyze1%>%
+  filter(totalgrass!=0)
+
+##Make the depth bin categories, we know that deeper than 15 meters there is no native seagrasses, and we want to separate the transects below 15 meters into two groups, ones that are 100% halophila, and ones that are not 100% halophila and contain native seagrasses, and then select for column that we need for further analysis
+finalanalyze1<- finalanalyze1%>% 
+       mutate(dhcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))%>%
+  select(Transect, dhcat, Species_Richness, simpsons)
+
+
+#simpsons
+#visualize the data 
+
+Simpsons<-finalanalyze1%>%
+    ggplot(names=labels, aes(x=dhcat, y=simpsons, fill=dhcat))+
+  geom_boxplot(outlier.shape=2)
+
+
+Simpsons
+
+hist(finalanalyze1$simpsons)
+#data is skewed right, going to square transform
+
+finalanalyze1$simpsq<-((finalanalyze1$simpsons)^2)
+hist(finalanalyze1$simpsq)
+
+
+#check assumpitons of transformed data
+bartlett.test(simpsq~dhcat, finalanalyze1)
+
+#	Bartlett test of homogeneity of variances
+
+#data:  simpsq by dhcat
+#Bartlett's K-squared = 9.1265, df = 2, p-value = 0.01043
+
+#not homogenous varicances, transfoming did not work going to run KW
+
+#tried transforming the data, unsuccessful
+kruskal.test(simpsons~dhcat, data=finalanalyze1)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  simpsons by dhcat
+#Kruskal-Wallis chi-squared = 2.0139, df = 2, p-value =0.3653
+
+
+SimpsonsFinal<-finalanalyze1%>%
+    ggplot(names=labels, aes(x=dhcat, y=simpsons, fill=dhcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab("Simpsons Index of Diversity ")+#no y axis lables
+  ggtitle("Simpsons Index of Diversity")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))
+ 
+SimpsonsFinal
+
+```
+
+Categorical Test looking at overall fish density
+
+```{r Density transects}
+finalanalyzedense <- read.csv("Data/WeFixedItAnalyzeMe.csv")
+
+#adding a column for fish density, total number of fish divided by the area of the transect
+finalanalyzedense<-finalanalyzedense%>%
+  mutate(density=N/100)
+
+#add our seagrass categories to the dataframe
+finalanalyzedense<-finalanalyzedense %>% 
+  mutate(totalgrass= (PCovHalophila+
+                      PCovThalassia+
+                      PCovHalodule+
+                      PCovSyringodium)) %>% 
+  mutate(PerHalTotal=(PCovHalophila/totalgrass))
+
+##Nas were generated on three transects where there was no seagrass, because cannot divide by zero, Making the NAs 0
+finalanalyzedense<-finalanalyzedense%>%
+  filter(totalgrass!=0)
+
+##Make the depth bin categories, we know that deeper than 15 meters there is no native seagrasses, and we want to separate the transects below 15 meters into two groups, ones that are 100% halophila, and ones that are not 100% halophila and contain native seagrasses, and then select for column that we need for further analysis
+
+
+finalanalyzedense<- finalanalyzedense%>% 
+       mutate(dhcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))
+
+#visualize the data 
+
+hist(finalanalyzedense$density) #Skewed left, lots of low numbers
+hist(sqrt(finalanalyzedense$density))#looks a little better
+
+#transform the data
+finalanalyzedense<-finalanalyzedense%>%
+  mutate(densesqrt=sqrt(density))
+
+#check assumptions
+bartlett.test(densesqrt~dhcat, finalanalyzedense)
+#not significant yay! next assumption
+
+denseANOVA<-aov(densesqrt~dhcat, finalanalyzedense)
+
+aov_residuals <- residuals(denseANOVA)
+
+hist(aov_residuals)
+
+shapiro.test(aov_residuals)
+#	Shapiro-Wilk normality test
+
+#data:  aov_residuals
+#W = 0.9651, p-value = 0.08854
+#not significant run ANOVA
+
+summary(denseANOVA)
+
+#            Df Sum Sq Mean Sq F value Pr(>F)  
+#dhcat        2 0.1924 0.09619   2.813 0.0686 .
+#Residuals   56 1.9152 0.03420                 
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+
+DenseFinal<-finalanalyzedense%>%
+    ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab("Fish Density ")+#no y axis lables
+  ggtitle("Fish Density")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+ theme(legend.position="none")
+ 
+DenseFinal
+
+#make combined plot
+
+DiversityPlot<-RichnessFinal+DenseFinal+SimpsonsFinal
+
+DiversityPlot
+
+```
+
+pivoting to get the total number of each species on each transect
+```{r Fish Table Supplemental}
+
+speciestable1<-AllMerged
+speciestable1<-speciestable1 %>% 
+  mutate(totalgrass= (speciestable1$PCovHalophila+
+                      speciestable1$PCovThalassia+
+                      speciestable1$PCovHalodule+
+                      speciestable1$PCovSyringodium)) %>% 
+  mutate(PerHalTotal=(speciestable1$PCovHalophila/totalgrass))
+
+speciestable1<- speciestable1%>% 
+       mutate(dhcat = case_when((depth >= 15.0) ~ ">15m",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "<15m & 100% H. stipulacea",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "<15m & Natives Present", 
+                                (PerHalTotal=="NaN")~ "No Seagrass Present" ))
+
+
+speciestable1<-speciestable1%>%
+  group_by(Common.Names, Scientific.Names, Family, dhcat)%>%
+  summarise(length(dhcat))%>%pivot_wider(names_from = dhcat, values_from = `length(dhcat)`)%>% mutate_all(~replace(., is.na(.), 0))
+
+write.table(speciestable1, "TotalFishTable")
+
+```
+
+This  section is the nMDS looking at fish communities at the family level, we split the seagrass into three categories, the first is all transects deeper than 15 meters, this was determined to be the depth that native seagrasses stop growing
+
+We split the seagrass shallower than 15m into two categories 1, where all seagrass present was halophila (<15m,100% halophila), and one where there was native seagrasses present (<15m, native present)
+
+Three seagrass categories transects were split into
+1. >15m
+2. <15m, 100% Halophila
+3. <15m, native present
+
+Then we removed all transects that had no seagrass, as we are interested in the effect of different categories of seagrass
+
+We ran an nMDS, Permanova, and Simper to tease apart what families are most influencing differences in fish communites in these different seagrass categories
+
+```{r nMDS/Simper }
+#libraries
+library(tidyverse)
+library(vegan)#run nMDS
+library(colorBlindness)#to check plots are color blind friendly
+
+#csv's required
+pcov<-read.csv("Data/WeFixedItAnalyzeMe.csv")#seagrass info
+AllMerged <- read.csv("AllMerged.csv")#fish families
+
+#Want to know, of the seagrass present, what percentage of that seagrass is halophila, Add new column for % halophila/total seagrass cover#
+pcov<-pcov %>% 
+  mutate(totalgrass= (pcov$PCovHalophila+
+                      pcov$PCovThalassia+
+                      pcov$PCovHalodule+
+                      pcov$PCovSyringodium)) %>% 
+  mutate(PerHalTotal=(pcov$PCovHalophila/totalgrass))
+
+##Nas were generated on three transects where there was no seagrass, because cannot divide by zero, removing these transects as they have no seagrass we are only interested in seagrass 
+pcov<-pcov%>%
+  filter(totalgrass!=0)
+
+
+#rename the dataframe
+depth_hal<-pcov
+
+##Make the depth bin categories, we know that deeper than 15 meters there is no native seagrasses, and we want to separate the transects below 15 meters into two groups, ones that are 100% halophila, and ones that are not 100% halophila and contain native seagrasses ##
+depth_hal<- depth_hal%>% 
+       mutate(dhcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))
+
+
+##now we need to link the fish families with the seagrass information
+
+#make family a factor
+AllMerged$Family<-as.factor(AllMerged$Family)
+
+#determine the total number of fish of each family that are on each transect to make dataframe for nMDS, which needs to be wide
+dhnMDSframe<-AllMerged %>%
+  group_by(Transect)%>%
+  count(Family)%>%
+  pivot_wider(names_from = Family , values_from = n)
+ 
+
+##Turning NAs to 0s where there are no fish from that family on the transect
+dhnMDSframe[is.na(dhnMDSframe)] <- 0
+
+##Merging the two dataframes to make one tabular by transect, that includes the seagrass categories
+dhnMDSframe = merge(dhnMDSframe, depth_hal, by = "Transect")
+
+
+#Select for only the columns that contain the families so we can run the nMDS, want no grouping variables here
+  HnMDSframe<-dhnMDSframe%>%
+    select(`Aulostomidae `:Haemulidae)
+
+#make a frame that has transect and our cat column in it to use for plotting purposes  
+plotframe<-dhnMDSframe%>%
+  select(`Aulostomidae `:Haemulidae, Transect,dhcat)
+
+
+###Question, i need to set the seed here so we get the same nMDS for all the times we run it
+
+#now run the nMDS 
+final_NMDS <- metaMDS(HnMDSframe, k = 2, trymax = 100) 
+final_NMDS
+#Stress:     0.2339253 
+
+#run the stress plot
+stressplot(final_NMDS)
+#non metric r squared 0.946
+#linear fit r2=0.728
+
+##pulling the species locations out of the NMDS (x and y)
+fam <- as.data.frame(final_NMDS$species)
+
+# this line is pulling the species names and linking them to their location
+fam$sp <- rownames(final_NMDS$species)
+
+
+#this is pulling the points for each individual transect out of the nmds
+  transect <- as.data.frame(final_NMDS$points)
+
+#we are pulling the seagrass categories out of our plotframe that we made earlier so we can make the 95% confidence intervals for our categories depth/percent halophila
+  transect$dhcat <- plotframe[,21] 
+
+#need to keep this code because you cant pull the points in the next line unless if this ordiplot exists
+ordiplot(final_NMDS, type = "none") 
+
+#this is storing the info to make the 95% confidence intervals as an object from the ordiplot
+finallord<-ordiellipse(final_NMDS, transect$dhcat, conf = 0.95, label = TRUE)
+
+#hidden vegan function that calculates ellipses
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+  theta <- (0:npoints) * 2 * pi/npoints
+  Circle <- cbind(cos(theta), sin(theta))
+  t(center + scale * t(Circle %*% chol(cov)))
+}
+
+#convert zone to a factor
+transect$dhcat <- factor(transect$dhcat)
+
+#create a dataframe of points that will draw the ellipses
+final_df_ell <- data.frame()
+
+for(g in levels(transect$dhcat)){
+  final_df_ell <- rbind(final_df_ell, cbind(as.data.frame(with(transect[transect$dhcat==g,],
+                                                   veganCovEllipse(finallord[[g]]$cov,finallord[[g]]$center,finallord[[g]]$scale)))
+                                ,zone=g))
+}
+
+#plot
+finalnMDSplot<-ggplot(transect) +
+  geom_point(aes(x = MDS1, y = MDS2, color = as.factor(dhcat)), size = 3) + 
+  geom_path(data = final_df_ell, aes(x = NMDS1, y = NMDS2, group = zone, color=zone), linewidth = 1, linetype = 1)+
+  theme_classic() +
+  labs(color = "dhcat", fill = "dhcat") +
+  guides(color = guide_legend(nrow = 1), fill = guide_legend(nrow = 1)) +
+theme(panel.border = element_rect(fill = NA),
+legend.position = "bottom")+ 
+  geom_text(data = fam, aes(x = MDS1, y = MDS2, label = sp), alpha = 1)+scale_fill_manual(name = "Category", labels = c("> 15m", "100% Halophila < 15m","Native Present and < 15m"),values = c("#56B4E9","#F0E442","#CC79A7"))+scale_color_manual(name = "Category", labels = c("> 15m", "100% Halophila < 15m","Native Present and < 15m"), values = c("#56B4E9","#F0E442","#CC79A7"))+annotate(geom="text", x=1.5, y=1.2, label="stress=0.234")
+
+
+finalnMDSplot
+
+#very cool function, check our colors for color blind friendly
+cvdPlot(finalnMDSplot)
+
+#now run post hoc to determine significant differences between different seagrasses
+#https://uw.pressbooks.pub/appliedmultivariatestatistics/chapter/permanova/ 
+
+#rename dataframe
+final_dissim_bray<- HnMDSframe
+
+##Making the dissimilarity matrix##
+final_bray <- vegdist(final_dissim_bray, method = "bray")
+    final_bray
+
+#change dhcat to factor
+plotframe$dhcat<-as.factor(plotframe$dhcat)
+
+##running the PERMANOVA# (dissimilaritymatrix~independent variables)
+    dh_Strata <- adonis2(final_bray ~ plotframe$dhcat)
+    dh_Strata
+ 
+#Permutation test for adonis under reduced model
+#Terms added sequentially (first to last)
+#Permutation: free
+#Number of permutations: 999
+
+#adonis2(formula = final_bray ~ plotframe$dhcat)
+#                Df SumOfSqs      R2      F Pr(>F)    
+#plotframe$dhcat  2    2.704 0.16453 5.5142  0.001 ***
+#Residual        56   13.730 0.83547                  
+#Total           58   16.434 1.00000                  
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+    
+#Final simper
+       dh_simper <- simper(final_dissim_bray, permutations = 999, group = (plotframe$dhcat))
+  summary(dh_simper)
+  
+#Contrast: native_deep 
+
+#                average      sd   ratio     ava     avb cumsum     p   
+#LLabridae        0.17861 0.18290 0.97650 7.47100 1.00000  0.225 0.343   
+#Lutjanidae      0.17646 0.17542 1.00590 0.05900 9.00000  0.447 0.002 **
+#Gobiidae        0.13057 0.12987 1.00540 1.82400 5.92600  0.612 0.595   
+#Serranidae      0.11229 0.09281 1.21000 1.47100 4.88900  0.753 0.009 **
+#Scaridae        0.06441 0.09668 0.66620 1.94100 1.33300  0.834 0.782   
+#Labrisomidae    0.04009 0.05051 0.79380 0.23500 1.44400  0.884 0.042 * 
+#Carangidae      0.03080 0.12191 0.25260 0.00000 2.59300  0.923 0.312   
+#Monacanthidae   0.02097 0.02528 0.82920 0.29400 0.70400  0.950 0.803   
+#Tetraodontidae  0.01914 0.03813 0.50210 0.52900 0.18500  0.974 0.089 . 
+#Clinidae        0.00718 0.03749 0.19160 0.00000 0.25900  0.983 0.292   
+#Haemulidae      0.00444 0.01588 0.27970 0.05900 0.14800  0.988 0.248   
+#Aulostomidae    0.00249 0.00834 0.29840 0.05900 0.03700  0.992 0.155   
+#Pomacentridae   0.00229 0.01185 0.19330 0.00000 0.11100  0.994 0.986   
+#Opistognathidae 0.00224 0.01247 0.17960 0.00000 0.03700  0.997 0.303   
+#Acanthuridae    0.00141 0.00727 0.19370 0.00000 0.07400  0.999 0.840   
+#Dactylopteridae 0.00078 0.00404 0.19320 0.00000 0.03700  1.000 0.292   
+#Holocentridae   0.00000 0.00000     NaN 0.00000 0.00000  1.000 0.739   
+#Syngnathidae    0.00000 0.00000     NaN 0.00000 0.00000  1.000 0.939   
+#Chaetodontidae  0.00000 0.00000     NaN 0.00000 0.00000  1.000 0.747   
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Contrast: native_hal 
+
+#                 average       sd    ratio      ava      avb cumsum     p    
+#abridae         0.25815  0.21043  1.22680  7.47100 11.20000  0.375 0.001 ***
+#Gobiidae         0.14368  0.12891  1.11460  1.82400  5.40000  0.584 0.259    
+#Scaridae         0.10041  0.10874  0.92340  1.94100  3.53300  0.729 0.022 *  
+#Serranidae       0.06191  0.07634  0.81090  1.47100  1.53300  0.819 0.999    
+#Monacanthidae    0.02669  0.03414  0.78160  0.29400  0.80000  0.858 0.098 .  
+#Pomacentridae    0.02483  0.05972  0.41580  0.00000  1.20000  0.894 0.004 ** 
+#Tetraodontidae   0.01915  0.04222  0.45360  0.52900  0.13300  0.922 0.230    
+#Labrisomidae     0.01664  0.02944  0.56520  0.23500  0.33300  0.946 0.991    
+#Lutjanidae       0.01427  0.02361  0.60450  0.05900  0.46700  0.967 1.000    
+#Syngnathidae     0.00775  0.02422  0.31990  0.00000  0.20000  0.978 0.002 ** 
+#Chaetodontidae   0.00473  0.01996  0.23680  0.00000  0.06700  0.985 0.007 ** 
+#Acanthuridae     0.00407  0.01534  0.26570  0.00000  0.40000  0.991 0.282    
+#Holocentridae    0.00286  0.01125  0.25400  0.00000  0.06700  0.995 0.007 ** 
+#Haemulidae       0.00185  0.00816  0.22670  0.05900  0.00000  0.998 0.743    
+#Aulostomidae     0.00172  0.00752  0.22890  0.05900  0.00000  1.000 0.463    
+#Clinidae         0.00000  0.00000      NaN  0.00000  0.00000  1.000 0.569    
+#Dactylopteridae  0.00000  0.00000      NaN  0.00000  0.00000  1.000 0.568    
+#Carangidae       0.00000  0.00000      NaN  0.00000  0.00000  1.000 0.971    
+#Opistognathidae  0.00000  0.00000      NaN  0.00000  0.00000  1.000 0.524    
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#Contrast: deep_hal 
+
+#                 average       sd    ratio      ava      avb cumsum     p  
+#Labridae         0.17230  0.16544  1.04150  1.00000 11.20000  0.222 0.494  
+#Lutjanidae       0.15217  0.16024  0.94960  9.00000  0.46700  0.419 0.086 .
+#Gobiidae         0.13807  0.12872  1.07260  5.92600  5.40000  0.597 0.376  
+#Serranidae       0.09707  0.08521  1.13920  4.88900  1.53300  0.722 0.323  
+#Scaridae         0.07329  0.09010  0.81350  1.33300  3.53300  0.817 0.475  
+#Labrisomidae     0.03407  0.04547  0.74940  1.44400  0.33300  0.861 0.403  
+#Carangidae       0.02789  0.11319  0.24640  2.59300  0.00000  0.896 0.451  
+#Monacanthidae    0.02339  0.02752  0.84980  0.70400  0.80000  0.927 0.363  
+#Pomacentridae    0.02142  0.04874  0.43950  0.11100  1.20000  0.954 0.044 *
+#Tetraodontidae   0.00737  0.01651  0.44660  0.18500  0.13300  0.964 0.979  
+#Clinidae         0.00614  0.03336  0.18410  0.25900  0.00000  0.972 0.532  
+#Syngnathidae     0.00590  0.01918  0.30750  0.00000  0.20000  0.979 0.092 .
+#Acanthuridae     0.00482  0.01500  0.32170  0.07400  0.40000  0.986 0.207  
+#Chaetodontidae   0.00323  0.01454  0.22190  0.00000  0.06700  0.990 0.263  
+#Haemulidae       0.00248  0.01313  0.18880  0.14800  0.00000  0.993 0.670  
+#Holocentridae    0.00215  0.00892  0.24130  0.00000  0.06700  0.996 0.243  
+#Opistognathidae  0.00183  0.01108  0.16470  0.03700  0.00000  0.998 0.482  
+#Aulostomidae     0.00085  0.00463  0.18450  0.03700  0.00000  0.999 0.866  
+#Dactylopteridae  0.00068  0.00363  0.18770  0.03700  0.00000  1.000 0.552  
+#---
+#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#Permutation: free
+#Number of permutations: 999
+
+```
+
+
+### Densities
+
+Now look at the families contributing to the top 90% of differences between the three different communities and see if the densities of fish in these families is different across the different categories (deeper than 15m, shallower than 15m all Halophila, shallower than 15m natives present)
+
+remove transects with no seagrass
+
+```{r Comparing Densities}
+#libraries
+library(tidyverse)
+
+#csvs needed
+#seagrass information
+grass<-read.csv("Data/WeFixedItAnalyzeMe.csv")
+
+#fish family information
+fish<-read.csv("AllMerged.csv")
+
+
+##Seagrass
+#adding a totalgrass column() sum of all grass present), and calculating the percent of present seagrass that is halophila 
+grass<-grass %>% 
+  mutate(totalgrass=(grass$PCovHalophila+
+                       grass$PCovThalassia+
+                       grass$PCovHalodule+
+                       grass$PCovSyringodium)) %>% 
+  mutate(PerHalTotal=(grass$PCovHalophila/
+                        totalgrass))
+
+#remove transects where there is no seagrass 
+grass<-grass%>%
+  filter(totalgrass!=0)
+
+##Make the depth bin categories##
+grass<- grass%>% 
+       mutate(dhcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))
+
+
+#count of number of fish in each family on each transect, want tabular by transect, replaced NA with zeros
+
+fishdens<-fish%>%
+  group_by(Transect)%>%
+  count(Family)%>%
+  pivot_wider(names_from = Family, values_from = n)%>%
+  mutate_all(~replace(., is.na(.), 0))
+
+#selected the families contributing to 90% of the differences between all groups, then determined density of each family, by taking the total count of each family divided by 100 (square meters) which is the area of the transects
+  fishdens<-fishdens%>%select(Transect, 
+                              Labridae, 
+                              Lutjanidae, 
+                              Gobiidae, 
+                              Serranidae, 
+                              Scaridae, 
+                              Labrisomidae, 
+                              Carangidae, 
+                              Pomacentridae, 
+                              Monacanthidae )%>%
+    mutate("Lab"=Labridae/100, 
+                                  "Lut"=Lutjanidae/100,
+                                  "Gob"=Gobiidae/100,
+                                  "Ser"=Serranidae/100,
+                                  "Scar"=Scaridae/100,
+                                  "Labm"=Labrisomidae/100,
+                                  "Car"=Carangidae/100,
+                                  "Pom"=Pomacentridae/100,
+                                  "Mon"=Monacanthidae/100)
+  
+
+
+#now merge the two dataframes, so we know the categories and the densities 
+fgmerge<-merge(fishdens, grass[,c("Transect", "dhcat")], by="Transect")
+
+#select columns we want to plot the data, transect, all the densities and the category
+plotframe <- fgmerge%>%select(Transect, 
+                              Lab, 
+                              Lut, 
+                              Gob, 
+                              Ser, 
+                              Scar, 
+                              Labm, 
+                              Car, 
+                              Pom, 
+                              Mon, 
+                              dhcat)
+  
+
+#now pivot dataframe longer, for plotting, and make the category a factor
+plotframe <- plotframe%>%
+  pivot_longer(cols = Lab:Mon,
+               names_to = "Family",
+               values_to = "density")%>%
+  mutate(dhcat = as.factor(dhcat))
+
+#visualize the differences between the families
+FNativeVsNonPlot <- ggplot(data = plotframe, aes(x = Family, y = density, fill = dhcat))+
+  geom_col(position = position_dodge(0.9), width = 0.75)+
+  labs(x = "Family", y = "Densities", fill = "Categories")  
+
+FNativeVsNonPlot
+```
+
+Visualization looks like there would be significant differences, so test for significant differences between the categories, transformations were attempted to normalize data, unsuccessful, KW tests were run for all density comparisons 
+
+First Labridae
+```{r Lab Kruskall Wallace Test}
+#load Libraries
+library(FSA)#for DunnPost Hoc
+library(rcompanion)#for cldList function
+library(tidyverse)
+
+#we will use the plotframe created in the chunk above for this analysis
+
+#filter for Labridae only 
+Lab<-plotframe%>%filter(Family=="Lab")
+
+#bartlet test for equal vaiance
+
+bartlett.test(density~dhcat, Lab)
+#p-value < 2.2e-16
+#tried transforming the data, unsuccessful, too many zeros run non parametric equivalent
+kruskal.test(density~dhcat, data=Lab)
+
+#Kruskal-Wallis rank sum test
+
+#data:  density by dhcat
+#Kruskal-Wallis chi-squared = 19.381, df = 2, p-value =
+#6.188e-05
+
+#now we run post hoc analysis
+LabDunn=dunnTest(density ~ dhcat,
+  data = Lab)
+
+LabDunn
+
+#     Comparison           Z      P.unadj        P.adj
+#1    deep - hal -3.58949190 0.0003313231 0.0006626463
+#2 deep - native -3.69975720 0.0002158058 0.0006474175
+#3  hal - native  0.02944607 0.9765088276 0.9765088276
+
+#interpret the results of Dunn and turn into letters of significant difference
+Lab1 = LabDunn$res
+
+cldList(comparison = Lab1$Comparison,
+        p.value    = Lab1$P.adj,
+        threshold  = 0.05)
+
+#   Group Letter MonoLetter
+#1   deep      a         a 
+#2    hal      b          b
+#3 native      b          b
+
+LabSigs<-c("a","b","b")
+```
+
+Gobidae
+```{r Gob KW}
+#filter for Gob only 
+Gob<-plotframe%>%filter(Family=="Gob")
+
+
+hist(Gob$density)
+
+#bartlet test for equal vaiance
+
+bartlett.test(density~dhcat, Gob)
+#p-value = 0.000175, fail bartlet test
+
+# too many zeros run non parametric equivalent
+
+kruskal.test(density~dhcat, data=Gob)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  density by dhcat
+#Kruskal-Wallis chi-squared = 7.2584, df = 2, p-value = 0.02654
+
+
+#now we run post hoc analysis
+GobDunn=dunnTest(density ~ dhcat,
+  data = Gob)
+
+GobDunn
+
+#    Comparison         Z     P.unadj      P.adj
+#1    deep - hal 0.2953991 0.767689010 0.76768901
+#2 deep - native 2.5960204 0.009431047 0.02829314
+#3  hal - native 2.0004056 0.045456482 0.09091296
+
+Gob1 = GobDunn$res
+
+cldList(comparison = Gob1$Comparison,
+        p.value    = Gob1$P.adj,
+        threshold  = 0.05)
+
+#   Group Letter MonoLetter
+#1   deep      a         a 
+#2    hal     ab         ab
+#3 native      b          b
+
+GobSigs<-c("a", "ab", "b")
+```
+
+Lutjanidae
+```{r Lut KW}
+
+#filter for Lut only 
+Lut<-plotframe%>%filter(Family=="Lut")
+
+#bartlet test for equal vaiance
+
+bartlett.test(density~dhcat, Lut)
+#p-value < 2.2e-16
+
+# too many zeros run non parametric equivalent
+
+kruskal.test(density~dhcat, data=Lut)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  density by dhcat
+#Kruskal-Wallis chi-squared = 20.707, df = 2, p-value =
+#3.189e-05
+
+#now we run post hoc analysis
+LutDunn=dunnTest(density ~ dhcat,
+  data = Lut)
+
+LutDunn
+
+#     Comparison        Z      P.unadj        P.adj
+#1    deep - hal 2.939782 3.284432e-03 6.568865e-03
+#2 deep - native 4.316865 1.582607e-05 4.747821e-05
+#3  hal - native 1.100536 2.710988e-01 2.710988e-01
+
+Lut1 = LutDunn$res
+
+cldList(comparison = Lut1$Comparison,
+        p.value    = Lut1$P.adj,
+        threshold  = 0.05)
+
+#   Group Letter MonoLetter
+#1   deep      a         a 
+#2    hal      b          b
+#3 native      b          b
+
+LutSigs<-c("a","b","b")
+
+```
+
+Serranidae
+```{r Ser KW}
+#filter for Ser only 
+Ser<-plotframe%>%filter(Family=="Ser")
+
+#bartlet test for equal vaiance
+
+bartlett.test(density~dhcat, Ser)
+#p-value = 0.001538
+
+# too many zeros run non parametric equivalent
+
+kruskal.test(density~dhcat, data=Ser)
+
+#Kruskal-Wallis rank sum test
+
+#data:  density by dhcat
+#Kruskal-Wallis chi-squared = 12.291, df = 2, p-value =
+#0.002143
+
+
+#now we run post hoc analysis
+SerDunn=dunnTest(density ~ dhcat,
+  data = Ser)
+
+SerDunn
+
+#     Comparison          Z     P.unadj       P.adj
+#1    deep - hal  2.9892348 0.002796771 0.008390314
+#2 deep - native  2.8111310 0.004936768 0.009873535
+#3  hal - native -0.2604426 0.794522414 0.794522414
+Ser1 = SerDunn$res
+
+cldList(comparison = Ser1$Comparison,
+        p.value    = Ser1$P.adj,
+        threshold  = 0.05)
+
+#   Group Letter MonoLetter
+#1   deep      a         a 
+#2    hal      b          b
+#3 native      b          b
+
+SerSigs<-c("a","b","b")
+```
+
+Scaridae
+```{r Scar KW}
+#filter for scar only 
+Scar<-plotframe%>%filter(Family=="Scar")
+
+#bartlet test for equal vaiance
+
+bartlett.test(density~dhcat, Scar)
+#p-value = 0.02598 significant bartlett, check residuals
+
+# too many zeros run non parametric equivalent
+
+kruskal.test(density~dhcat, data=Scar)
+
+#Kruskal-Wallis rank sum test
+
+#data:  density by dhcat
+#Kruskal-Wallis chi-squared = 2.7497, df = 2, p-value = 0.2529
+
+```
+
+Need to further break down Scaridae to fish that are in seagrass their whole lives vs fish that are juvenilles in the seagrass (when look at all nursery fish together no significant difference, look at striped alone difference is significant)
+```{r}
+scarJuv<-AllMerged %>%
+  group_by(Transect)%>%
+  count(Common.Names)%>%
+  pivot_wider(names_from = Common.Names , values_from = n)%>%
+   select("Transect", 
+          "Striped Parrotfish", 
+          "Princess Parrotfish" , 
+          "Stoplight Parrotfish",  
+          "Redband Parrotfish")%>%
+  mutate(across(everything(), ~replace(., is.na(.), 0)))%>%
+  mutate(spdens=`Striped Parrotfish`/100,
+                                     ppdens=`Princess Parrotfish`/100,
+                                     slp=`Stoplight Parrotfish`/100,
+                                     rbpdens=`Redband Parrotfish`/100)%>%
+  mutate(sumjuv=ppdens+slp+rbpdens+spdens)%>%
+  select(Transect,sumjuv)
+
+
+#importing the information for categories
+categories<- read_csv("Data/WeFixedItAnalyzeMe.csv")
+
+grass<-categories %>%
+  mutate(totalgrass= (PCovHalophila+
+                        PCovThalassia+
+                        PCovHalodule+
+                        PCovSyringodium)) %>%
+  mutate(PerHalTotal=(PCovHalophila/totalgrass))
+
+##remove the transects with no seagrass
+grass<-grass%>%
+  filter(totalgrass!=0)
+
+##Make a category column##
+ grass <- grass %>%
+       mutate(dcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))%>%
+   select(Transect, dcat)
+
+#now we merge with our fish info, so we have cat info
+scarJuv<- merge(grass, scarJuv, by= "Transect")
+
+
+#plot to get an idea of trends
+scarJuvplot<-scarJuv%>%ggplot(aes(x=dcat, y= sumjuv))+
+ geom_boxplot()
+ 
+scarJuvplot
+
+
+#filter for species to ensure the trends are the same as Lut KW from above
+kruskal.test(scarJuv$sumjuv ~ scarJuv$dcat, data = scarJuv)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  scarJuv$sumjuv by scarJuv$dcat
+#Kruskal-Wallis chi-squared = 4.1789, df = 2, p-value
+#= 0.1238
+
+stripedJuv<-AllMerged %>%
+  group_by(Transect)%>%
+  count(Common.Names)%>%
+  pivot_wider(names_from = Common.Names , values_from = n)%>%
+   select("Transect", 
+          "Striped Parrotfish", 
+          "Princess Parrotfish" , 
+          "Stoplight Parrotfish",  
+          "Redband Parrotfish")%>%
+  mutate(across(everything(), ~replace(., is.na(.), 0)))%>%
+  mutate(spdens=`Striped Parrotfish`/100,
+                                     ppdens=`Princess Parrotfish`/100,
+                                     slp=`Stoplight Parrotfish`/100,
+                                     rbpdens=`Redband Parrotfish`/100)
+
+#now we merge with our fish info, so we have cat info
+stripedJuv<- merge(grass, stripedJuv, by= "Transect")
+
+
+kruskal.test(stripedJuv$spdens ~ scarJuv$dcat, data = stripedJuv)
+#Kruskal-Wallis rank sum test
+#data:  stripedJuv$spdens by scarJuv$dcat
+#Kruskal-Wallis chi-squared = 7.4603, df = 2, p-value= 0.02399
+
+kruskal.test(stripedJuv$ppdens~scarJuv$dcat, data=stripedJuv)
+#0.794
+
+```
+
+
+
+Labrisomidae
+
+confused, KW is significant but the Dunn test doesnt indicate any significan differences between groups...
+
+
+```{r Labm KW}
+#filter for Labm only 
+Labm<-plotframe%>%filter(Family=="Labm")
+
+#bartlet test for equal vaiance
+
+bartlett.test(density~dhcat, Labm)
+#p-value = 4.054e-09
+
+# too many zeros run non parametric equivalent
+
+kruskal.test(density~dhcat, data=Labm)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  density by dhcat
+#Kruskal-Wallis chi-squared = 6.6433, df = 2, p-value = 0.03609
+
+#now we run post hoc analysis
+LabmDunn=dunnTest(density ~ dhcat,
+  data = Labm)
+
+LabmDunn
+
+#     Comparison         Z    P.unadj      P.adj
+#1    deep - hal 1.8139783 0.06968107 0.13936214
+#2 deep - native 2.3738782 0.01760236 0.05280707
+#3  hal - native 0.4257731 0.67027317 0.67027317
+
+Labm1 = LabmDunn$res
+
+cldList(comparison = Labm1$Comparison,
+        p.value    = Labm1$P.adj,
+        threshold  = 0.05)
+
+#   Group Letter MonoLetter
+#1   deep      a         a 
+#2    hal     ab         a
+#3 native      b          a
+
+LabmSigs<-c("a", "a", "a")
+```
+
+Carringidae
+```{r Car KW}
+#filter for car only 
+Car<-plotframe%>%filter(Family=="Car")
+
+#bartlet test for equal vaiance
+
+bartlett.test(density~dhcat, Car)
+#-value < 2.2e-16
+
+# too many zeros run non parametric equivalent
+
+kruskal.test(density~dhcat, data=Car)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  density by dhcat
+#Kruskal-Wallis chi-squared = 4.9916, df = 2, p-value = 0.08243
+
+#not significant
+```
+
+Pomocentridae
+```{r Pom KW}
+
+#filter for Pom only 
+Pom<-plotframe%>%filter(Family=="Pom")
+
+#bartlet test for equal vaiance
+
+bartlett.test(density~dhcat, Pom)
+# p-value < 2.2e-16
+
+# too many zeros run non parametric equivalent
+
+kruskal.test(density~dhcat, data=Pom)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  density by dhcat
+#Kruskal-Wallis chi-squared = 8.5965, df = 2, p-value = 0.01359
+
+#now we run post hoc analysis
+PomDunn=dunnTest(density ~ dhcat,
+  data = Pom)
+
+PomDunn
+
+#     Comparison          Z    P.unadj      P.adj
+#1    deep - hal -2.5353875 0.01123230 0.02246460
+#2 deep - native  0.4253337 0.67059343 0.67059343
+#3  hal - native  2.6765625 0.00743817 0.02231451
+
+Pom1 = PomDunn$res
+
+cldList(comparison = Pom1$Comparison,
+        p.value    = Pom1$P.adj,
+        threshold  = 0.05)
+
+#   Group Letter MonoLetter
+#1   deep      a         a 
+#2    hal      b          b
+#3 native      a         a 
+
+PomSigs<-c("a", "b", "a")
+```
+
+Monocanthidae
+```{r Mon KW}
+#filter for Mon only 
+Mon<-plotframe%>%filter(Family=="Mon")
+
+#bartlet test for equal vaiance
+
+bartlett.test(density~dhcat, Mon)
+#p-value = 0.07111, significant check residuals 
+
+MonANOVA<-aov(density~dhcat, Mon)
+
+aov_residuals <- residuals(MonANOVA)
+
+hist(aov_residuals)# left skewed
+
+shapiro.test(aov_residuals)
+#too many zeros run non parametric equivalent
+
+kruskal.test(density~dhcat, data=Mon)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  density by dhcat
+#Kruskal-Wallis chi-squared = 3.022, df = 2, p-value = 0.2207
+
+```
+
+*paper name here* paper determined that yellowtail and lane snappers behaved differently, this is separating the snapper species and seeing if the trends we see separately are the same as the ones when the whole Lutjanidae family is grouped together
+```{r Separating Snappers}
+library(readr)
+library(tidyverse)
+library(vegan)
+library(FSA)#for DunnPost Hoc
+library(rcompanion)#for cldList function\
+library(patchwork)#to combine plots
+
+AllMerged<- read_csv("AllMerged.csv")
+
+#total count of each type of fish on each transect, select for snappers, then calculate density
+snap<-AllMerged %>%
+  group_by(Transect)%>%
+  count(Common.Names)%>%
+  pivot_wider(names_from = Common.Names , values_from = n)%>%
+   select("Transect", 
+          "Yellowtail Snapper", 
+          "Lane Snapper", 
+          "Cubera Snapper")%>%mutate(ysdens=`Yellowtail Snapper`/100,
+                                     lsdens=`Lane Snapper`/100,
+                                     csdens=`Cubera Snapper`/100)%>%
+  select(Transect,
+         ysdens, 
+         lsdens, 
+         csdens)
+
+##Turning NAs to 0s
+snap[is.na(snap)] <- 0
+
+
+#pivot longer for analysis/plotting
+snap<-snap%>%
+  pivot_longer(cols = ysdens:csdens,
+               names_to = "Species",
+               values_to = "density")
+
+#importing the information for categories
+categories<- read_csv("Data/WeFixedItAnalyzeMe.csv")
+
+grass<-categories %>%
+  mutate(totalgrass= (PCovHalophila+
+                        PCovThalassia+
+                        PCovHalodule+
+                        PCovSyringodium)) %>%
+  mutate(PerHalTotal=(PCovHalophila/totalgrass))
+
+##remove the transects with no seagrass
+grass<-grass%>%
+  filter(totalgrass!=0)
+
+##Make a category column##
+ grass <- grass %>%
+       mutate(dcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))%>%
+   select(Transect, dcat)
+
+#now we merge with our fish info, so we have cat info
+snapsbro<- merge(grass, snap, by= "Transect")
+
+
+#plot to get an idea of trends
+snapsbroplot<-snapsbro%>%ggplot(aes(x=dcat, y= density, fill= Species))+
+  geom_bar(stat="identity", position=position_dodge())
+ 
+snapsbroplot
+
+
+#filter for species to ensure the trends are the same as Lut KW from above
+snapsbroy<-snapsbro %>% filter(Species == "ysdens")
+kruskal.test(snapsbroy$density ~ snapsbroy$dcat, data = snapsbroy)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  snapsbroy$density by snapsbroy$dcat
+#Kruskal-Wallis chi-squared = 20.194, df = 2, p-value =
+#4.12e-05
+
+#now we run post hoc analysis
+YTDunn=dunnTest(density ~ dcat,
+  data = snapsbroy)
+
+YTDunn
+
+
+#     Comparison         Z      P.unadj        P.adj
+#1    deep - hal 3.2628438 1.103003e-03 0.0022060056
+#2 deep - native 4.0809133 4.485909e-05 0.0001345773
+#3  hal - native 0.6006296 5.480867e-01 0.5480867064
+
+YT1 = YTDunn$res
+
+cldList(comparison = YT1$Comparison,
+        p.value    = YT1$P.adj,
+        threshold  = 0.05)
+
+#  Group Letter MonoLetter
+#1   deep      a         a 
+#2    hal      b          b
+#3 native      b          b
+
+#YT is same as all snappers
+
+snapsbrol<-snapsbro%>%filter(Species=="lsdens")
+kruskal.test(snapsbrol$density ~ snapsbrol$dcat, data = snapsbrol)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  snapsbrol$density by snapsbrol$dcat
+#Kruskal-Wallis chi-squared = 9.8372, df = 2, p-value =
+#0.007309
+
+#now we run post hoc analysis
+LSDunn=dunnTest(density ~ dcat,
+  data = snapsbrol)
+
+LSDunn
+
+#     Comparison         Z     P.unadj       P.adj
+#1    deep - hal 1.9850357 0.047140497 0.094280995
+#2 deep - native 2.9919525 0.002771994 0.008315982
+#3  hal - native 0.8104733 0.417668223 0.417668223
+
+LS1 = LSDunn$res
+
+cldList(comparison = LS1$Comparison,
+        p.value    = LS1$P.adj,
+        threshold  = 0.05)
+
+#   Group Letter MonoLetter
+#1   deep      a         a 
+#2    hal     ab         ab
+#3 native      b          b
+
+snapsbroc<-snapsbro%>%filter(Species=="csdens")
+kruskal.test(snapsbroc$density ~ snapsbroc$dcat, data = snapsbroc)
+
+#	Kruskal-Wallis rank sum test
+
+#data:  snapsbroc$density by snapsbroc$dcat
+#Kruskal-Wallis chi-squared = 1.1852, df = 2, p-value = 0.5529
+
+
+```
+
+```{r Plot Snappers}
+#and now we plot!
+
+#get yellowtail boxplot working, look how we want it 
+
+YT<-snapsbro%>%
+    filter(Species=="ysdens")%>%
+    ggplot(names=labels, aes(x=dcat, y=density, fill=dcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab("Density (fish/100m2)")+
+  ggtitle("Yellowtail Snapper")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.35, label="a")+#add first letter, family and fontface change font and remove bold
+  geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.2, label="b")+#add second letter
+  geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.2, label="b")+#add third letter 
+  theme(legend.position="none")#removes legend 
+  
+
+YT
+
+#lane snapper
+LS<-snapsbro%>%
+    filter(Species=="lsdens")%>%
+    ggplot(names=labels, aes(x=dcat, y=density, fill=dcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab(" ")+
+  ggtitle("Lane Snapper")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.11, label="a")+#add first letter, family and fontface change font and remove bold
+  geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.05, label="ab")+#add second letter
+  geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.05, label="b")+#add third letter 
+  theme(legend.position="none")#removes legend 
+  
+
+LS
+
+#Cubera Snapper
+CS<-snapsbro%>%
+    filter(Species=="csdens")%>%
+    ggplot(names=labels, aes(x=dcat, y=density, fill=dcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab(" ")+#no y axis label
+  ggtitle("Cubera Snapper")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))
+  
+CS
+
+#combine all three plots
+snap<-YT+LS+CS+Lut
+snap
+```
+
+

@@ -140,7 +140,7 @@ point_plot1
 library(tidyverse)
 library(patchwork)
 
-seagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+seagrass<-read.csv("Data/Historical Seagrass Data.csv")
 
 #there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
 seagrass[is.na(seagrass)] <- 0 
@@ -243,7 +243,7 @@ PatchPlot1
 
 #patchwork hates me 
 library(gridExtra)
-PatchPlot2<-grid.arrange(Total, Native, Halo, ncol=3)
+PatchPlot2<-grid.arrange(Total, Native, Halo, ncol=1)
 PatchPlot2
 
 ```
@@ -347,4 +347,58 @@ native1
 logits2<-grid.arrange(halo1,native1, ncol=2)
 logits2
 ```
+
+```{r Stacked Barplot?}
+
+#potentially including this.. potentially not
+
+grass <- read.csv("Data/WeFixedItAnalyzeMe.csv")
+
+##Seagrass
+#adding a totalgrass column, sum of all grass present, and calculating the percent of present seagrass that is halophila 
+grass<-grass %>% 
+  mutate(totalgrass=(grass$PCovHalophila+
+                       grass$PCovThalassia+
+                       grass$PCovHalodule+
+                       grass$PCovSyringodium)) %>% 
+  mutate(PerHalTotal=(grass$PCovHalophila/
+                        totalgrass))%>%
+  mutate(PerNatTotal=(grass$nativecover/grass$totalgrass))
+
+#remove transects that dont have any seagrass
+grass<-grass%>%
+  filter(totalgrass!=0)
+
+##Make the depth bin categories##
+grass<- grass%>% 
+       mutate(dhcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))
+#total number of transects in each category
+grasscount<-grass%>%
+  group_by(dhcat)%>%
+  summarise(count = n())
+
+#barplot problem
+
+bpdata<-grass%>%
+  select(dhcat, depth, PerHalTotal, PerNatTotal)%>%
+  mutate(addgrass=PerNatTotal+PerHalTotal)%>%
+  pivot_longer(cols=c(PerHalTotal,PerNatTotal),names_to="seagrass", values_to = "Cov" )%>%
+  ggplot(aes(x=depth, y=Cov, fill=seagrass))+
+  geom_col(position="stack", width=0.35)+
+  ylim(0,1)+
+  xlab("Depth (m)")+
+  ylab("Seagrass Proportion")+
+  scale_fill_manual(values=c("PerHalTotal"="#56B4E9", "PerNatTotal"="#CC79A7"), labels=c("PerHalTotal"=expression(italic("H. stipulacea")), "PerNatTotal"="Native Seagrass"))+
+  labs(fill=NULL)+
+  theme_bw()+
+  theme( panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+
+bpdata
+
+```
+
 

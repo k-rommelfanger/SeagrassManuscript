@@ -14,7 +14,7 @@ library(vegan)#nMDS
 library(RColorBrewer)#color options for ggplot
 
 ##Load data
-seagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+seagrass<-read.csv("Data/Historical Seagrass Data.csv")
 
 #there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
 seagrass[is.na(seagrass)] <- 0 
@@ -135,7 +135,7 @@ library(rcompanion)#for cldList function
 library(patchwork)#to combine plots
 
 #import csv
-seagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+seagrass<-read.csv("Data/Historical Seagrass Data.csv")
 
 
 #there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
@@ -199,19 +199,19 @@ Halo<-avggrass%>%
    geom_boxplot(aes(Year, Halophila, group=Year),fill="#F0E442")+
   ylab("Halophila Percent Cover")+
   ylim(0,100)+
-   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=10, label="a")+#add second letter
-   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=10, label="a")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=10, label="a")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=10, label="a")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=37.5, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=97, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=97, label="bc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=35, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=90, label="bc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=90, label="bc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=90, label="bc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=97, label="c")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=85, label="bc")
+   geom_text(aes(),family="serif", fontface="plain",x= "2010" , y=10, label="a")+#add second letter
+   geom_text(aes(),family="serif", fontface="plain",x= "2011" , y=10, label="a")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2012" , y=10, label="a")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2013" , y=10, label="a")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2014" , y=37.5, label="ab")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2015" , y=97, label="abc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2016" , y=97, label="bc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2017" , y=35, label="ab")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2018" , y=90, label="bc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2019" , y=90, label="bc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2020" , y=90, label="bc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2021" , y=97, label="c")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2022" , y=85, label="bc")
 
 Halo
 
@@ -221,7 +221,7 @@ Looking at differences of total percent cover over time
 
 ```{r Total Percent Cover KW}
 
-Tseagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+Tseagrass<-read.csv("Data/Historical Seagrass Data.csv")
 
 #there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
 Tseagrass[is.na(Tseagrass)] <- 0 
@@ -283,19 +283,19 @@ Total<-Tavggrass%>%
   ylim(0,100)+
   theme_bw()+
   theme_bw()+
-   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=15, label="ab")+#add second letter
-   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=15, label="a")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=15, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=30, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=50, label="abcd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=100, label="bcd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=100, label="d")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=45, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=90, label="bcd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=90, label="bcd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=90, label="cd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=100, label="d")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=85, label="bcd")
+   geom_text(aes(),family="serif", fontface="plain",x= "2010" , y=15, label="ab")+#add second letter
+   geom_text(aes(),family="serif", fontface="plain",x= "2011" , y=15, label="a")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2012" , y=15, label="ab")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2013" , y=30, label="abc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2014" , y=50, label="abcd")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2015" , y=100, label="bcd")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2016" , y=100, label="d")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2017" , y=45, label="ab")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2018" , y=90, label="bcd")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2019" , y=90, label="bcd")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2020" , y=90, label="cd")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2021" , y=100, label="d")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2022" , y=85, label="bcd")
 
 Total
 ```
@@ -352,19 +352,19 @@ Native<-Tavggrass%>%
   ylab(" Percent Cover of Native Seagrasses (%)")+
   ylim(0,100)+
   theme_bw()+
-   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=15, label="abc")+#add second letter
-   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=15, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=15, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=30, label="c")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=45, label="ac")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=25, label="ac")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=25, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=25, label="b")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=25, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=25, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=25, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=25, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=25, label="ab")
+   geom_text(aes(),family="serif", fontface="plain",x= "2010" , y=15, label="abc")+#add second letter
+   geom_text(aes(),family="serif", fontface="plain",x= "2011" , y=15, label="ab")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2012" , y=15, label="abc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2013" , y=30, label="c")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2014" , y=45, label="ac")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2015" , y=25, label="ac")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2016" , y=25, label="abc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2017" , y=25, label="b")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2018" , y=25, label="ab")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2019" , y=25, label="abc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2020" , y=25, label="ab")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2021" , y=25, label="abc")+
+   geom_text(aes(),family="serif", fontface="plain",x= "2022" , y=25, label="ab")
 
 Native 
 
@@ -382,7 +382,7 @@ Looking at the effect of depth on presence or absence of native seagrasses
 
 library(DHARMa)#for simulate residuals, to check assumptions
 
-finalanalyze1 <- read.csv("Final Code and Plots/Data/WeFixedItAnalyzeMe.csv")
+finalanalyze1 <- read.csv("Data/WeFixedItAnalyzeMe.csv")
 
 #running the logit to determine the depth that natives stop growing 
 
@@ -460,7 +460,7 @@ looking at the effect of depth on the presence of halophila
 
 ```{r Logit Halophila}
 
-finalanalyze1 <- read.csv("Final Code and Plots/Data/WeFixedItAnalyzeMe.csv")
+finalanalyze1 <- read.csv("Data/WeFixedItAnalyzeMe.csv")
 
 #make a column that shows presence or absence of halophila 
 finalanalyze1$halpres <- ifelse(finalanalyze1$PCovHalophila==0, '0', '1')

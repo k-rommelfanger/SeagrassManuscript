@@ -10,7 +10,7 @@ editor_options:
 ```{r setup, include=FALSE}
 library(tidyverse)
 
-AllMerged <- read.csv("Final Code and Plots/Data/AllMerged.csv")
+AllMerged <- read.csv("Data/AllMerged.csv")
 
 #Filter out commercially important species only 
 AllMerged$Scientific.Names<-as.factor(AllMerged$Scientific.Names)
@@ -80,20 +80,32 @@ FishPlotCount<-CountLong%>%
   geom_bar(position="stack", stat="identity")+
   xlab("Commercially Important Species")+
   ylab("Number of Fish Observed")+
-  scale_fill_manual(name = "Seagrass Category", labels = c("> 15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+
-  scale_color_manual(name = "Seagrass Category", labels = c("> 15m", "< 15m & 100% Halophila","and < 15m & Native Present "), values = c("#56B4E9","#F0E442","#CC79A7"))+
+  scale_fill_manual(name = "Seagrass Category", 
+                   labels = c(
+      expression("Deep" ~ italic("H. stipulacea")),
+      expression("Shallow" ~ italic("H. stipulacea")),
+      "Shallow Mixed"
+    ),
+              values = c("#56B4E9","#F0E442","#CC79A7"))+
   theme_classic()+
-  theme(panel.border = element_rect(fill = NA),axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  theme(panel.border = element_rect(fill = NA),axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, face="italic"))+
+  theme(
+  text = element_text(size = 12),          # All text
+  axis.text = element_text(size = 12),     # Axis ticks
+  axis.title = element_text(size = 12),    # Axis labels
+  legend.text = element_text(size = 12),
+  legend.title = element_text(size = 12)
+)
   
 
 FishPlotCount
 
 
-#we decided we like the total count better than the proportion
-FishPlotProportion<-ProportionLong%>%
-  ggplot(aes(x=Scientific.Names, y=Proportion, fill=Category))+
-  geom_bar(position="stack", stat="identity")
-FishPlotProportion
+#save the figure
+
+ggsave("CommerciallyImportant.png", FishPlotCount, width = 10, height = 5, dpi = 300)
+
+
 ```
 
 

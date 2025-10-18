@@ -8,19 +8,6 @@ editor_options:
 ---
 
 
-```{r Macroalgae}
-macroalgaecheck<-finalanalyze1
-mean(macroalgaecheck$PCovMacroalgae)
-#5.91%
-
-macroalgaecheck<-macroalgaecheck%>%
-  filter(PCovMacroalgae!=0)
-
-mean(macroalgaecheck$PCovMacroalgae)
-#7.97%
-```
-
-
 
 ```{r Seagrass nMDS}
 #libraries needed
@@ -29,7 +16,7 @@ library(vegan)#nMDS
 library(RColorBrewer)#color options for ggplot
 
 #read in csv
-seagrass<-read.csv("Final Code and Plots/Data/Historical Seagrass Data.csv")
+seagrass<-read.csv("Data/Historical Seagrass Data.csv")
 
 #there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
 seagrass[is.na(seagrass)] <- 0 
@@ -252,7 +239,7 @@ Logistic regression plots
 
 ```{r Logit native }
 
-finalanalyze1 <- read.csv("Final Code and Plots/Data/WeFixedItAnalyzeMe.csv")
+finalanalyze1 <- read.csv("Data/WeFixedItAnalyzeMe.csv")
 
 #running the logit to determine the depth that natives stop growing 
 
@@ -402,3 +389,14 @@ bpdata
 ```
 
 
+```{r Macroalgae}
+macroalgaecheck<-finalanalyze1
+mean(macroalgaecheck$PCovMacroalgae)
+#5.91%
+
+macroalgaecheck<-macroalgaecheck%>%
+  filter(PCovMacroalgae!=0)
+
+mean(macroalgaecheck$PCovMacroalgae)
+#7.97%
+```

@@ -13,9 +13,9 @@ library(tidyverse)
 library(patchwork)
 #csvs needed
 #seagrass information
-grass<-read.csv("Final Code and Plots/Data/WeFixedItAnalyzeMe.csv")
+grass<-read.csv("Data/WeFixedItAnalyzeMe.csv")
 #fish family information
-fish<-read.csv("Final Code and Plots/Data/AllMerged.csv")
+fish<-read.csv("Data/AllMerged.csv")
 
 
 ##Seagrass
@@ -310,7 +310,7 @@ library(readr)
 library(tidyverse)
 library(patchwork)
 #import csv
-AllMerged<- read_csv("Final Code and Plots/Data/AllMerged.csv")
+AllMerged<- read_csv("Data/AllMerged.csv")
 
 #total count of each type of fish on each transect, select for snappers, then calculate density
 snap<-AllMerged %>%

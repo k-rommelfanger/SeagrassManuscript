@@ -107,21 +107,21 @@ Gob<-plotframe%>%
   ylab(" ")+#no y axis lables
   ggtitle("Gobiidae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
-  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
-  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.27, label="a")+#add first letter, family and fontface change font and remove bold
+  scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"
+  )
+)+#pick the colors
+  scale_x_discrete(labels = NULL)+
+  geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.27, label="a")+#add first letter, family and fontface change font and remove bold
   geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.25, label="ab")+#add second letter
   geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.2, label="b")+#add third letter 
   theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
-    ylim(0,0.3)+#manually set y axis 
-   theme(
-  text = element_text(size = 12),          # All text
-  axis.text = element_text(size = 12),     # Axis ticks
-  axis.title = element_text(size = 12),    # Axis labels
-  legend.text = element_text(size = 12),
-  legend.title = element_text(size = 12),
-   axis.text.x = element_blank(),    # remove the x-axis tick labels
-      axis.ticks.x = element_blank()    # optionally remove the x-axis tick marks
-)
+    ylim(0,0.3)#manually set y axis 
 
 
 Gob
@@ -137,23 +137,22 @@ Lab<-plotframe%>%
   ylab("Density (fish/100m2)")+
   ggtitle("Labridae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
-  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
-  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.2, label="a")+#add first letter, family and fontface change font and remove bold
+  scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"
+  )
+)+#pick the colors
+  scale_x_discrete(labels = NULL)+
+  geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.2, label="a")+#add first letter, family and fontface change font and remove bold
   geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.3, label="b")+#add second letter
   geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.54, label="b")+#add third letter
   theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
-    ylim(0,0.55)+#manually set y axis 
-   theme(
-  text = element_text(size = 12),          # All text
-  axis.text = element_text(size = 12),     # Axis ticks
-  axis.title = element_text(size = 12),    # Axis labels
-  legend.text = element_text(size = 12),
-  legend.title = element_text(size = 12),
-   axis.text.x = element_blank(),    # remove the x-axis tick labels
-      axis.ticks.x = element_blank()    # optionally remove the x-axis tick marks
-)
-
-
+    ylim(0,0.55)#manually set y axis 
+  
 Lab
 #next plot Lutjanidae 
 
@@ -166,23 +165,22 @@ Lut<-plotframe%>%
   ylab(" ")+
   ggtitle("Lutjanidae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
-  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
-  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.4, label="a")+#add first letter, family and fontface change font and remove bold
+  scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"
+  )
+)+#pick the colors
+  scale_x_discrete(labels = NULL)+#add first letter, family and fontface change font and remove bold+
+  geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.37, label="a")+
   geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.2, label="b")+#add second letter
   geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.2, label="b")+#add third letter
   theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
-    ylim(0,0.45)+#manually set y axis 
-   theme(
-  text = element_text(size = 12),          # All text
-  axis.text = element_text(size = 12),     # Axis ticks
-  axis.title = element_text(size = 12),    # Axis labels
-  legend.text = element_text(size = 12),
-  legend.title = element_text(size = 12),
-   axis.text.x = element_blank(),    # remove the x-axis tick labels
-      axis.ticks.x = element_blank()    # optionally remove the x-axis tick marks
-)
-
-
+    ylim(0,0.45)#manually set y axis 
+  
 Lut
 
 #next is Serranidae
@@ -195,22 +193,21 @@ Ser<-plotframe%>%
   ylab("Density (fish/100m2)")+
   ggtitle("Serranidae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
-  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
-  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.19, label="a")+#add first letter, family and fontface change font and remove bold
+  scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"
+  )
+)+#pick the colors
+  scale_x_discrete(labels = NULL)+
+  geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.19, label="a")+#add first letter, family and fontface change font and remove bold
   geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.125, label="b")+#add second letter
   geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.125, label="b")+#add third letter 
  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
-    ylim(0,0.25)+#manually set y axis 
-   theme(
-  text = element_text(size = 12),          # All text
-  axis.text = element_text(size = 12),     # Axis ticks
-  axis.title = element_text(size = 12),    # Axis labels
-  legend.text = element_text(size = 12),
-  legend.title = element_text(size = 12),
-   axis.text.x = element_blank(),    # remove the x-axis tick labels
-      axis.ticks.x = element_blank()    # optionally remove the x-axis tick marks
-)
-
+    ylim(0,0.25)#manually set y axis 
 Ser
 
 #Scaridae is next
@@ -224,19 +221,18 @@ Scar<-plotframe%>%
   ylab(" ")+#n y axis labels
   ggtitle("Scaridae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
-  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & <100% Halophila"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
-  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+
+  scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"
+  )
+)+#pick the colors
+  scale_x_discrete(labels = NULL)+
   theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
-    ylim(0,0.175)+#manually set y axis 
-   theme(
-  text = element_text(size = 12),          # All text
-  axis.text = element_text(size = 12),     # Axis ticks
-  axis.title = element_text(size = 12),    # Axis labels
-  legend.text = element_text(size = 12),
-  legend.title = element_text(size = 12),
-   axis.text.x = element_blank(),    # remove the x-axis tick labels
-      axis.ticks.x = element_blank()    # optionally remove the x-axis tick marks
-)
+    ylim(0,0.175)#manually set y axis 
 
 Scar
 
@@ -251,21 +247,21 @@ Labm<-plotframe%>%
   ylab(" ")+#no y axis labels
   ggtitle("Labrisomidae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
-  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & <100% Halophila"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
-  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.09, label="a")+#add first letter, family and fontface change font and remove bold
+  scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"
+  )
+)+#pick the colors
+  scale_x_discrete(labels = NULL)+
+  geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.09, label="a")+#add first letter, family and fontface change font and remove bold
   geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.075, label="a")+#add second letter
   geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.075, label="a")+#add third letter 
   theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
-    ylim(0,0.1)+#manually set y axis 
-   theme(
-  text = element_text(size = 12),          # All text
-  axis.text = element_text(size = 12),     # Axis ticks
-  axis.title = element_text(size = 12),    # Axis labels
-  legend.text = element_text(size = 12),
-  legend.title = element_text(size = 12),
-   axis.text.x = element_blank(),    # remove the x-axis tick labels
-      axis.ticks.x = element_blank()    # optionally remove the x-axis tick marks
-)
+    ylim(0,0.1)#manually set y axis 
 
 Labm
 
@@ -279,27 +275,22 @@ Car<-plotframe%>%
   ylab("Density (fish/100m2)")+
   ggtitle("Carangidae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
-  scale_fill_manual(name = "Seagrass Category", 
-                   labels = c(
-      expression("Deep" ~ italic("H. stipulacea")),
-      expression("Shallow" ~ italic("H. stipulacea")),
-      "Shallow Mixed"
-    ),
-              values = c("#56B4E9","#F0E442","#CC79A7"))+
-  scale_x_discrete(labels=c(
-      expression("Deep" ~ italic("H. stipulacea")),
-      expression("Shallow" ~ italic("H. stipulacea")),
-      "Shallow Mixed"
-    ))+
-  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+#no legend, gridlines or grey background, centered title
-    ylim(0,0.65)+#manually set y axis 
-   theme(
-  text = element_text(size = 12),          # All text
-  axis.text = element_text(size = 12),     # Axis ticks
-  axis.title = element_text(size = 12),    # Axis labels
-  legend.text = element_text(size = 12),
-  legend.title = element_text(size = 12)
-)
+  scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"
+  )
+)+#pick the colors
+  scale_x_discrete(labels = c(
+  "deep"   = expression("Deep "*italic("H. stipulacea")),
+  "hal"    = expression("Shallow "*italic("H. stipulacea")),
+  "native" = "Shallow Mixed"
+))+
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
+    ylim(0,0.65)#manually set y axis 
   
 Car
 
@@ -314,32 +305,27 @@ Pom<-plotframe%>%
   ylab(" ")+#n y axis labels
   ggtitle("Pomacentridae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
-  scale_fill_manual(name = "Seagrass Category", 
-                   labels = c(
-      expression("Deep" ~ italic("H. stipulacea")),
-      expression("Shallow" ~ italic("H. stipulacea")),
-      "Shallow Mixed"
-    ),
-              values = c("#56B4E9","#F0E442","#CC79A7"))+
-  scale_x_discrete(labels=c(
-      expression("Deep" ~ italic("H. stipulacea")),
-      expression("Shallow" ~ italic("H. stipulacea")),
-      "Shallow Mixed"
-    ))+
+  scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"
+  )
+)+#pick the colors
+  scale_x_discrete(labels = c(
+  "deep"   = expression("Deep "*italic("H. stipulacea")),
+  "hal"    = expression("Shallow "*italic("H. stipulacea")),
+  "native" = "Shallow Mixed"
+))+
   theme(legend.position="none")+#removes legend 
     ylim(0,0.12)+#manually set y axis 
   geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.09, label="a")+#add first letter, family and fontface change font and remove bold
   geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.075, label="b")+#add second letter
   geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.075, label="a")+#add third letter 
-  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+#no legend, gridlines or grey background, centered title
-    ylim(0,0.1)+#manually set y axis 
-   theme(
-  text = element_text(size = 12),          # All text
-  axis.text = element_text(size = 12),     # Axis ticks
-  axis.title = element_text(size = 12),    # Axis labels
-  legend.text = element_text(size = 12),
-  legend.title = element_text(size = 12)
-)
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
+    ylim(0,0.1)#manually set y axis 
   
 Pom
 
@@ -354,36 +340,278 @@ Mon<-plotframe%>%
   ylab(" ")+#no y axis labels
   ggtitle("Monacanthidae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
-  scale_fill_manual(name = "Seagrass Category", 
-                   labels = c(
-      expression("Deep" ~ italic("H. stipulacea")),
-      expression("Shallow" ~ italic("H. stipulacea")),
-      "Shallow Mixed"
-    ),
-              values = c("#56B4E9","#F0E442","#CC79A7"))+
-  scale_x_discrete(labels=c(
-      expression("Deep" ~ italic("H. stipulacea")),
-      expression("Shallow" ~ italic("H. stipulacea")),
-      "Shallow Mixed"
-    ))+
-  theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+#no legend, gridlines or grey background, centered title
-    ylim(0,0.035)+#manually set y axis 
-   theme(
-  text = element_text(size = 12),          # All text
-  axis.text = element_text(size = 12),     # Axis ticks
-  axis.title = element_text(size = 12),    # Axis labels
-  legend.text = element_text(size = 12),
-  legend.title = element_text(size = 12)
-)
+ scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"
+  )
+)+#pick the colors
+  scale_x_discrete(labels = c(
+  "deep"   = expression("Deep "*italic("H. stipulacea")),
+  "hal"    = expression("Shallow "*italic("H. stipulacea")),
+  "native" = "Shallow Mixed"
+))+
+  theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
+    ylim(0,0.035)#manually set y axis 
   
 Mon
+
+#add the theme to set font to size 12
+Lab<-Lab + theme( text = element_text(size = 12),          # minimum readable font
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12),
+  legend.text = element_text(size = 12)
+)
+
+Lab
+
+Lut<-Lut+ theme( text = element_text(size = 12),          # minimum readable font
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12),
+  legend.text = element_text(size = 12)
+)
+
+Gob<-Gob+ theme( text = element_text(size = 12),          # minimum readable font
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12),
+  legend.text = element_text(size = 12)
+)
+  Ser<-Ser+ theme( text = element_text(size = 12),          # minimum readable font
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12),
+  legend.text = element_text(size = 12)
+)
+  Scar<-Scar+ theme( text = element_text(size = 12),          # minimum readable font
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12),
+  legend.text = element_text(size = 12)
+)
+  
+  Labm<-Labm+ theme( text = element_text(size = 12),          # minimum readable font
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12),
+  legend.text = element_text(size = 12)
+)
+  
+  Labm
+ 
+   Car<-Car+ theme( text = element_text(size = 12),          # minimum readable font
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12),
+  legend.text = element_text(size = 12)
+,axis.text.x = element_text(angle = 35, hjust = 1))
+  
+   Pom<-Pom+ theme( text = element_text(size = 12),          # minimum readable font
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12),
+  legend.text = element_text(size = 12)
+,axis.text.x = element_text(angle = 35, hjust = 1))
+  Mon<-Mon+ theme( text = element_text(size = 12),          # minimum readable font
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  plot.title = element_text(size = 12),
+  legend.text = element_text(size = 12)
+,axis.text.x = element_text(angle = 35, hjust = 1))
+  
+  Mon
 
 #patchwork help  https://gotellilab.github.io/GotelliLabMeetingHacks/NickGotelli/ggplotPatchwork.html
 DifferentScales<-Lab+Lut+Gob+Ser+Scar+Labm+Car+Pom+Mon+plot_layout(ncol=3)
 
 DifferentScales
+#and now export using ggsave
+
+
+
+ggsave(filename = "DensityPlot.png", plot = DifferentScales, width = 10, height = 7, units = "in",bg="white", dpi = 300)
+
+
+
+
 ```
 
+
+```{r}
+
+library(ggforce)
+
+Gob<-plotframe%>%
+    filter(Family=="Gob")%>%
+    ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
+  geom_violin()+
+  geom_sina()+
+  geom_boxplot(fill=NA,alpha=0,width=0.1)+
+  xlab(" ")+#no x axis labels 
+  ylab(" ")+#no y axis lables
+  ggtitle("Gobiidae")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+
+  geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.27, label="a")+#add first letter, family and fontface change font and remove bold
+  geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.25, label="ab")+#add second letter
+  geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.2, label="b")+#add third letter 
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
+    ylim(0,0.3)#manually set y axis 
+
+Gob
+
+```
+
+
+
+
+```{r Compare Snapper Densities}
+library(readr)
+library(tidyverse)
+library(patchwork)
+#import csv
+AllMerged<- read_csv("Data/AllMerged.csv")
+
+#total count of each type of fish on each transect, select for snappers, then calculate density
+snap<-AllMerged %>%
+  group_by(Transect)%>%
+  count(Common.Names)%>%
+  pivot_wider(names_from = Common.Names , values_from = n)%>%
+   select("Transect", 
+          "Yellowtail Snapper", 
+          "Lane Snapper", 
+          "Cubera Snapper")%>%mutate(ysdens=`Yellowtail Snapper`/100,
+                                     lsdens=`Lane Snapper`/100,
+                                     csdens=`Cubera Snapper`/100)%>%
+  select(Transect,
+         ysdens, 
+         lsdens, 
+         csdens)
+
+##Turning NAs to 0s
+snap[is.na(snap)] <- 0
+
+
+#pivot longer for analysis/plotting
+snap<-snap%>%
+  pivot_longer(cols = ysdens:csdens,
+               names_to = "Species",
+               values_to = "density")
+
+#importing the information for categories
+categories<- read_csv("Data/WeFixedItAnalyzeMe.csv")
+
+#make a total grass, and percent of grass that is Halophila column
+grass<-categories %>%
+  mutate(totalgrass= (PCovHalophila+
+                        PCovThalassia+
+                        PCovHalodule+
+                        PCovSyringodium)) %>%
+  mutate(PerHalTotal=(PCovHalophila/totalgrass))
+
+##remove the transects with no seagrass
+grass<-grass%>%
+  filter(totalgrass!=0)
+
+##Make a category column##
+ grass <- grass %>%
+       mutate(dcat = case_when((depth >= 15.0) ~ "deep",
+                                (depth <= 15.0 & PerHalTotal == 1.0) ~ "hal",
+                                (depth <= 15.0 & PerHalTotal < 1.0) ~ "native" ))%>%
+   select(Transect, dcat)
+
+#now we merge with our fish info, so we have cat info
+snapsbro<- merge(grass, snap, by= "Transect")
+
+#get yellowtail boxplot working, look how we want it 
+
+YT<-snapsbro%>%
+    filter(Species=="ysdens")%>%
+    ggplot(names=labels, aes(x=dcat, y=density, fill=dcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab("Density (individuals/100m2)")+
+  ggtitle("Ocyurus chrysurus")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.35, label="a")+#add first letter, family and fontface change font and remove bold
+  geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.2, label="b")+#add second letter
+  geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.2, label="b")+#add third letter 
+theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no legend, no gridlines or grey background, centered title
+  
+
+YT
+
+#lane snapper
+LS<-snapsbro%>%
+    filter(Species=="lsdens")%>%
+    ggplot(names=labels, aes(x=dcat, y=density, fill=dcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab(" ")+
+  ggtitle("Lutjanus synagris")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.11, label="a")+#add first letter, family and fontface change font and remove bold
+  geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.05, label="ab")+#add second letter
+  geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.05, label="b")+#add third letter 
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no legend, no gridlines or grey background, centered title
+  
+
+LS
+
+#Cubera Snapper
+CS<-snapsbro%>%
+    filter(Species=="csdens")%>%
+    ggplot(names=labels, aes(x=dcat, y=density, fill=dcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab("Density (individuals/100m2)")+#no y axis label
+  ggtitle("Lutjanus cyanopterus")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no legend, no gridlines or grey background, centered title
+  
+CS
+
+#Lutjanidae plot with legend for patchwork, need to run above code first before making this plot, just to make the dataframes that are needed 
+
+#look at Lutjanidae plot to see what is needed
+Lut1<-plotframe%>%
+    filter(Family=="Lut")%>%
+    ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
+  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_point(size=0.6)+#adds the points onto plot in single line
+  xlab(" ")+#no x axis labels 
+  ylab(" ")+
+  ggtitle("Lutjanidae")+
+  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
+  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n Native Present"))+geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.4, label="a")+#add first letter, family and fontface change font and remove bold
+  geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.2, label="b")+#add second letter
+  geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.2, label="b")+#add third letter
+  theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
+    ylim(0,0.45)#manually set y axis 
+  
+Lut1
+  
+
+#combine all three plots
+snap<-YT+LS+CS+Lut1
+snap
+
+
+```
 
 
 

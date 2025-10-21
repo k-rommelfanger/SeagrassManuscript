@@ -119,13 +119,16 @@ sg_newplot
 ```
 
 
-Using tidyverse to look a the total number of transects each year in the historical data 
+Using tidyverse to look a the total number of transects each year in the historical data, also determining the average cover per year
 ```{r number of transects per year}
 
 seayear<-seagrass%>%group_by(Year)%>%
   summarise(length(unique(Transect)))
 
 View(seayear)
+
+
+
 ```
 
 Looking at differences in percent cover of Halophila between years 
@@ -199,6 +202,8 @@ Halo<-avggrass%>%
    geom_boxplot(aes(Year, Halophila, group=Year),fill="#F0E442")+
   ylab("Halophila Percent Cover")+
   ylim(0,100)+
+  theme_bw()+
+  theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank())+#remove gridlines
    geom_text(aes(),family="serif", fontface="plain",x= "2010" , y=10, label="a")+#add second letter
    geom_text(aes(),family="serif", fontface="plain",x= "2011" , y=10, label="a")+
    geom_text(aes(),family="serif", fontface="plain",x= "2012" , y=10, label="a")+
@@ -282,7 +287,7 @@ Total<-Tavggrass%>%
   ylab("Total Seagrass Percent Cover (%)")+
   ylim(0,100)+
   theme_bw()+
-  theme_bw()+
+  theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank())+#remove gridlines
    geom_text(aes(),family="serif", fontface="plain",x= "2010" , y=15, label="ab")+#add second letter
    geom_text(aes(),family="serif", fontface="plain",x= "2011" , y=15, label="a")+
    geom_text(aes(),family="serif", fontface="plain",x= "2012" , y=15, label="ab")+
@@ -352,6 +357,7 @@ Native<-Tavggrass%>%
   ylab(" Percent Cover of Native Seagrasses (%)")+
   ylim(0,100)+
   theme_bw()+
+  theme(panel.grid.major = element_blank(),panel.grid.minor = element_blank())+#remove gridlines
    geom_text(aes(),family="serif", fontface="plain",x= "2010" , y=15, label="abc")+#add second letter
    geom_text(aes(),family="serif", fontface="plain",x= "2011" , y=15, label="ab")+
    geom_text(aes(),family="serif", fontface="plain",x= "2012" , y=15, label="abc")+
@@ -372,7 +378,45 @@ PatchPlot<-Native+Halo+Total
 
 PatchPlot
 
+library(gridExtra)
+PatchPlot1<-grid.arrange(Native, Halo, Total)
+
 ```
+
+
+Look at average seagrass per year
+
+```{r}
+AVGseagrass<-read.csv("Data/Historical Seagrass Data.csv")
+
+#there is a blank in 2015 Transect 11, quadrat 10, nothing is recorded for S. filliforme, we replaced it with a zero, likely non of this species observed in this quadrat
+AVGseagrass[is.na(AVGseagrass)] <- 0 
+
+#calculate the average percent cover of each seagrass for each year
+YearAvg<-Tseagrass%>%group_by(Year)%>%
+  summarise(Thalassia=mean(T.testudinum), 
+            Halophila=mean(Halophilastipulacae), 
+            Halodule=mean(H.wrightii), 
+            Syringodium=mean(S.filiforme))%>%
+  mutate(totalpcov=(Thalassia+Halophila+Halodule+Syringodium), nativecov=(Thalassia+Halodule+Syringodium))%>%
+  filter(!Year=="2009")
+
+
+#average native cover begining 2016, 
+MeanHalArrive<-YearAvg%>%
+  select(Year, nativecov)%>%
+  filter(Year>=2016)
+
+
+mean(MeanHalArrive$nativecov)
+#1.341729
+
+sd(MeanHalArrive$nativecov)
+#0.9792331
+
+
+```
+
 
 Now transitioning to looking at the data from 2023 surveys 
 
@@ -447,7 +491,7 @@ native<-ggplot(finalanalyze1, aes(x = depth, y = pres1)) +
               color = "#CC79A7") +
   labs(x = "Depth", y = "Native Seagrass Presence") +
   theme_bw() +
-  theme(legend.position = "none")+
+  theme(legend.position = "none", panel.grid.major = element_blank(),panel.grid.minor = element_blank())+
   geom_text(aes(x = 20, y = 0.75, label = "y = y= -0.19877x+1.161700
 \nPseudo R2=0.2541301"))
 
@@ -522,8 +566,8 @@ halo<-ggplot(finalanalyze1, aes(x = depth, y = halpres1)) +
   geom_smooth(method = "glm", method.args = list(family=binomial),
               color = "#F0E442") +
   labs(x = "Depth", y = "Halophila Presence") +
-  theme_bw() +
-  theme(legend.position = "none")+
+  theme_bw()+ 
+  theme(legend.position = "none", panel.grid.major = element_blank(),panel.grid.minor = element_blank())+
   geom_text(aes(x = 20, y = 0.75, label = "y = y= 0.084x+1.49
 \nPseudo R2=0.0485"))
 
@@ -532,5 +576,11 @@ halo
 logits<-halo+native
 
 logits
+#combine plots using gridextra because r is being annoying
+grid.arrange(halo, native, ncol=2)
 
 ```
+
+
+
+

@@ -7,6 +7,12 @@ editor_options:
   chunk_output_type: console
 ---
 
+```{r}
+pcov<-read.csv("Data/WeFixedItAnalyzeMe.csv")#seagrass info
+AllMerged <- read.csv("Data/AllMerged.csv")#fish families
+```
+
+
 ## Things to add
 1) Set seed for nMDS
 2) Paper name for why we broke apart the snapper
@@ -395,7 +401,7 @@ library(colorBlindness)#to check plots are color blind friendly
 
 #csv's required
 pcov<-read.csv("Data/WeFixedItAnalyzeMe.csv")#seagrass info
-AllMerged <- read.csv("AllMerged.csv")#fish families
+AllMerged <- read.csv("Data/AllMerged.csv")#fish families
 
 #Want to know, of the seagrass present, what percentage of that seagrass is halophila, Add new column for % halophila/total seagrass cover#
 pcov<-pcov %>% 
@@ -508,7 +514,22 @@ finalnMDSplot<-ggplot(transect) +
   guides(color = guide_legend(nrow = 1), fill = guide_legend(nrow = 1)) +
 theme(panel.border = element_rect(fill = NA),
 legend.position = "bottom")+ 
-  geom_text(data = fam, aes(x = MDS1, y = MDS2, label = sp), alpha = 1)+scale_fill_manual(name = "Category", labels = c("> 15m", "100% Halophila < 15m","Native Present and < 15m"),values = c("#56B4E9","#F0E442","#CC79A7"))+scale_color_manual(name = "Category", labels = c("> 15m", "100% Halophila < 15m","Native Present and < 15m"), values = c("#56B4E9","#F0E442","#CC79A7"))+annotate(geom="text", x=1.5, y=1.2, label="stress=0.234")
+  geom_text(data = fam, aes(x = MDS1, y = MDS2, label = sp), alpha = 1)+
+  scale_fill_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"))+
+  scale_color_manual(
+  name = "Category",
+  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
+  labels = c(
+    "deep"   = expression("Deep "*italic("H. stipulacea")),
+    "hal"    = expression("Shallow "*italic("H. stipulacea")),
+    "native" = "Shallow Mixed"))+
+  annotate(geom="text", x=1.5, y=1.2, label="stress=0.234")
 
 
 finalnMDSplot
@@ -645,7 +666,7 @@ library(tidyverse)
 grass<-read.csv("Data/WeFixedItAnalyzeMe.csv")
 
 #fish family information
-fish<-read.csv("AllMerged.csv")
+fish<-read.csv("Data/AllMerged.csv")
 
 
 ##Seagrass

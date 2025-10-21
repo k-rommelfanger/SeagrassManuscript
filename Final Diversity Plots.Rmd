@@ -51,13 +51,30 @@ RichnessFinal<-finaldiversityplots%>%
   xlab(" ")+#no x axis labels 
   ylab("Square Root of Species Richness (# unique species)")+#no y axis lables
   ggtitle("Species Richness")+
-  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
-  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+
+  scale_fill_manual(name = "Seagrass Category", 
+                   labels = c(
+      expression("Deep" ~ italic("H. stipulacea")),
+      expression("Shallow" ~ italic("H. stipulacea")),
+      "Shallow Mixed"
+    ),
+              values = c("#56B4E9","#F0E442","#CC79A7"))+
+  scale_x_discrete(labels=c(
+      expression("Deep" ~ italic("H. stipulacea")),
+      expression("Shallow" ~ italic("H. stipulacea")),
+      "Shallow Mixed"
+    ))+
   geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=4.3, label="a")+#add first letter, family and fontface change font and remove bold
   geom_text(aes(family="serif", fontface="plain", label="ab"),x= "hal" , y=4.0)+#add second letter
   geom_text(aes(family="serif", fontface="plain"), x= "native" , y=3.2, label="b")+#add third letter 
     ylim(1,4.5)+#manually set y axis 
-  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no legend, gridlines or grey background, centered title
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+#no legend, gridlines or grey background, centered title
+   theme(
+  text = element_text(size = 10),          # All text
+  axis.text = element_text(size = 10),     # Axis ticks
+  axis.title = element_text(size = 10),    # Axis labels
+  legend.text = element_text(size = 10),
+  legend.title = element_text(size = 10)
+)
 
   
  
@@ -73,9 +90,26 @@ SimpsonsFinal<-finaldiversityplots%>%
   xlab(" ")+#no x axis labels 
   ylab("Simpsons Index of Diversity ")+#no y axis lables
   ggtitle("Simpsons Index of Diversity")+
-  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
-  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+ 
-  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no gridlines or grey background, centered title
+  scale_fill_manual(name = "Seagrass Category", 
+                   labels = c(
+      expression("Deep" ~ italic("H. stipulacea")),
+      expression("Shallow" ~ italic("H. stipulacea")),
+      "Shallow Mixed"
+    ),
+              values = c("#56B4E9","#F0E442","#CC79A7"))+
+  scale_x_discrete(labels=c(
+      expression("Deep" ~ italic("H. stipulacea")),
+      expression("Shallow" ~ italic("H. stipulacea")),
+      "Shallow Mixed"
+    ))+
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+#no gridlines or grey background, centered title
+   theme(
+  text = element_text(size = 10),          # All text
+  axis.text = element_text(size = 10),     # Axis ticks
+  axis.title = element_text(size = 10),    # Axis labels
+  legend.text = element_text(size = 10),
+  legend.title = element_text(size = 10)
+)
  
 SimpsonsFinal
 
@@ -88,9 +122,26 @@ DenseFinal<-finaldiversityplots%>%
   xlab(" ")+#no x axis labels 
   ylab("Fish Density (# individuals/100m^2)")+#no y axis lables
   ggtitle("Fish Density")+
-  scale_fill_manual(name = "Category", labels = c(">15m", "< 15m & 100% Halophila","< 15m & Native Present"),values = c("#56B4E9","#F0E442","#CC79A7"))+#pick the colors
-  scale_x_discrete(labels=c(">15m", "< 15m & \n 100% Halophila","<15m & \n  Native Present"))+ 
-  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no legend, gridlines or grey background, centered title
+  scale_fill_manual(name = "Seagrass Category", 
+                   labels = c(
+      expression("Deep" ~ italic("H. stipulacea")),
+      expression("Shallow" ~ italic("H. stipulacea")),
+      "Shallow Mixed"
+    ),
+              values = c("#56B4E9","#F0E442","#CC79A7"))+
+  scale_x_discrete(labels=c(
+      expression("Deep" ~ italic("H. stipulacea")),
+      expression("Shallow" ~ italic("H. stipulacea")),
+      "Shallow Mixed"
+    ))+
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+#no legend, gridlines or grey background, centered title
+   theme(
+  text = element_text(size = 10),          # All text
+  axis.text = element_text(size = 10),     # Axis ticks
+  axis.title = element_text(size = 10),    # Axis labels
+  legend.text = element_text(size = 10),
+  legend.title = element_text(size = 10)
+)
  
 DenseFinal
 
@@ -99,6 +150,9 @@ DenseFinal
 DiversityPlot<-RichnessFinal+DenseFinal+SimpsonsFinal
 
 DiversityPlot
+
+
+ggsave("DiversityPlot.png", DiversityPlot, width = 8, height = 5, dpi = 300)
 ```
 
 

@@ -8,6 +8,19 @@ editor_options:
 ---
 
 
+#```{r Macroalgae}
+macroalgaecheck<-finalanalyze1
+mean(macroalgaecheck$PCovMacroalgae)
+#5.91%
+
+macroalgaecheck<-macroalgaecheck%>%
+  filter(PCovMacroalgae!=0)
+
+mean(macroalgaecheck$PCovMacroalgae)
+#7.97%
+#```
+
+
 
 ```{r Seagrass nMDS}
 #libraries needed
@@ -237,7 +250,7 @@ PatchPlot2
 
 Logistic regression plots
 
-```{r Logit native }
+#```{r Logit native }
 
 finalanalyze1 <- read.csv("Data/WeFixedItAnalyzeMe.csv")
 
@@ -263,13 +276,13 @@ native
 
 #gray shading is 95% confidence interval for the line
 
-```
+#```
 
 
 
 
 
-```{r Logit Halophila}
+#```{r Logit Halophila}
 library(gridExtra)
 
 #make a column that shows presence or absence of halophila 
@@ -289,7 +302,11 @@ halo<-ggplot(finalanalyze1, aes(x = depth, y = halpres)) +
   labs(x = "Depth", y = "H. Stipulacea Presence") +
   theme(legend.position = "none", text = element_text(size = 10))+
    theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+
-  annotate(geom="text", x=17, y=0.75, label="y = 0.084x+1.49\nPseudo R2=0.0485")
+  annotate(geom="text", x=17, y=0.75, label="y = 0.084x+1.49\nPseudo R2=0.0485")+
+  scale_y_continuous(
+    limits = c(0, 1),       # 👈 sets the range from 0 to 1
+    breaks = c(0, 1)        # 👈 shows ticks ONLY at 0 and 1
+  )
 
 
 halo
@@ -302,19 +319,25 @@ logits
 logits1<-halo+native
 logits1
 
-```
+#```
+
+Logistic Regression Plot Code
 
 ```{r}
 
-#remake plots without the equation of the line
+#remake Logit plots without the equation of the line
 halo1<-ggplot(finalanalyze1, aes(x = depth, y = halpres)) +
   geom_jitter(alpha = 0.4, width = 0, height = 0.01) +
   geom_smooth(method = "glm", method.args = list(family=binomial),
               color = "#F0E442") +
-  labs(x = "Depth", y = "H. Stipulacea Presence") +
+  labs(x = "Depth (m)", y = (expression(italic("H. Stipulacea")~ "Presence"))) +
   theme(legend.position = "none", text = element_text(size = 10))+
    theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+
-  annotate(geom="text", x=17, y=0.75, label="Pseudo R2=0.0485")
+  annotate(geom="text", x=17, y=0.75, label="Pseudo R2=0.0485")+
+  scale_y_continuous(
+    limits = c(0, 1),       # 👈 sets the range from 0 to 1
+    breaks = c(0, 1)        # 👈 shows ticks ONLY at 0 and 1
+  )
 
 
 halo1
@@ -323,10 +346,14 @@ native1<-ggplot(finalanalyze1, aes(x = depth, y = pres)) +
   geom_jitter(alpha = 0.4, width = 0, height = 0.01) +
   geom_smooth(method = "glm", method.args = list(family=binomial),
               color = "#CC79A7") +
-  labs(x = "Depth", y = "Native Seagrass Presence") +
+  labs(x = "Depth (m)", y = "Native Seagrass Presence") +
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+
   theme(legend.position = "none", text = element_text(size = 10))+ #no legend font size 10 
-   annotate(geom="text", x=17, y=0.75, label="Pseudo R2=0.2541301")
+   annotate(geom="text", x=17, y=0.75, label="Pseudo R2=0.2541301")+
+  scale_y_continuous(
+    limits = c(0, 1),       # 👈 sets the range from 0 to 1
+    breaks = c(0, 1)        # 👈 shows ticks ONLY at 0 and 1
+  )
 
 native1
 
@@ -389,14 +416,3 @@ bpdata
 ```
 
 
-```{r Macroalgae}
-macroalgaecheck<-finalanalyze1
-mean(macroalgaecheck$PCovMacroalgae)
-#5.91%
-
-macroalgaecheck<-macroalgaecheck%>%
-  filter(PCovMacroalgae!=0)
-
-mean(macroalgaecheck$PCovMacroalgae)
-#7.97%
-```

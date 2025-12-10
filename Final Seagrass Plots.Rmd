@@ -121,14 +121,14 @@ green_palette <- colorRampPalette(c("#CC79A7", "#F0E442"))(14)
 
 
 point_plot1 <- ggplot(grass.cont) + 
-  geom_point(aes(x = MDS1, y = MDS2, fill = as.numeric(Year)), color = "black", pch = 21, size = 2) + 
+  geom_point(aes(x = MDS1, y = MDS2, fill = as.numeric(Year)),pch=21, size = 2, stroke=0) + 
   theme_classic() + 
   labs(fill = "Year") + 
   guides(fill = guide_colorbar(nrow = 1, barwidth=15, barheight=1)) + 
   scale_fill_gradientn(colors = green_palette) + 
   theme(panel.border = element_rect(fill = NA), 
         legend.position = "bottom") + 
-  geom_label(data = grass_year, aes(x = MDS1, y = MDS2, label = sp), colour = "black", label.size = NA, alpha = 0.3, size = 5) + 
+  geom_label(data = grass_year, aes(x = MDS1, y = MDS2, label = sp), colour = "black", label.size = NA, alpha = 0.3, size = 3, fontface="italic") + 
   annotate(geom = "text", x = 0.3, y = 0.8, label = "stress=0.061", fontface = "bold", size = unit(5, "pt"))
 
 point_plot1
@@ -167,6 +167,7 @@ grass09<-seagrass%>%group_by(Year, Transect)%>%
 
 #make year a factor 
 avggrass$Year<-as.factor(avggrass$Year, levels=c("2009", "2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020","2021","2022"))
+
 grass09$Year<-as.factor(grass09$Year,levels=c("2009", "2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020","2021","2022"))
 
 yearlabels<-c("2009"/"(n=1)","2010"/"(n=7)","2011"/"(n=13)","2012"/"(n=9)","2013"/"(n=12)","2014"/"(n=6)","2015"/"(n=12)","2016"/"(n=10)","2017"/"(n=9)","2018"/"(n=9)","2019"/"(n=9)","2020"/"(n=9)","2021"/"(n=10)","2022"/"(n=12)")
@@ -192,22 +193,23 @@ Total<-avggrass%>%
   geom_point(data=grass09, aes(x=Year, y=totalpcov))+
   geom_boxplot(aes(Year, totalpcov, group=Year),fill="darkgreen")+
   ylab("Total Seagrass Percent Cover (%)")+
-  ggtitle(label="Total Seagrass Cover")+
+  #ggtitle(label="Total Seagrass Cover")+
   ylim(0,100)+
   theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(size = 8))+#no gridlines or grey background
-   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=15, label="ab")+#add second letter
-   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=15, label="a")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=15, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=30, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=50, label="abcd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=100, label="bcd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=100, label="d")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=45, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=90, label="bcd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=90, label="bcd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=90, label="cd")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=100, label="d")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=85, label="bcd")
+   geom_text(aes(family="serif", fontface="plain"),x= 2010 , y=15, label="ab")+#add second letter
+   geom_text(aes(family="serif", fontface="plain"),x= 2011 , y=15, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2012 , y=15, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2013 , y=30, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2014 , y=50, label="abcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2015 , y=100, label="bcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2016 , y=100, label="d")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2017 , y=45, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2018 , y=90, label="bcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2019 , y=90, label="bcd")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2020 , y=90, label="cd")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2021 , y=100, label="d")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2022 , y=85, label="bcd")+
+  scale_x_continuous(breaks = 2009:2022)
   
 
 Total
@@ -219,22 +221,23 @@ Native<-avggrass%>%
    geom_point(data=grass09, aes(x=Year, y=nativecov))+
    geom_boxplot(aes(Year, nativecov, group=Year),fill="#CC79A7")+
   ylab("Native Seagrass Percent Cover (%)")+
-  ggtitle(label="Total Native Seagrass")+
+  #ggtitle(label="Total Native Seagrass")+
   ylim(0,100)+
   theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(size = 8))+#no gridlines or grey background
-   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=15, label="abc")+#add second letter
-   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=15, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=15, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=30, label="c")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=45, label="ac")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=25, label="ac")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=25, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=25, label="b")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=25, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=25, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=25, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=25, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=25, label="ab")
+   geom_text(aes(family="serif", fontface="plain"),x= 2010 , y=15, label="abc")+#add second letter
+   geom_text(aes(family="serif", fontface="plain"),x= 2011 , y=15, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2012 , y=15, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2013 , y=30, label="c")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2014 , y=45, label="ac")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2015 , y=25, label="ac")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2016 , y=25, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2017 , y=25, label="b")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2018 , y=25, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2019 , y=25, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2020 , y=25, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2021 , y=25, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2022 , y=25, label="ab")+
+  scale_x_continuous(breaks = 2009:2022)
 
 Native 
 
@@ -246,22 +249,23 @@ Halo<-avggrass%>%
    geom_boxplot(aes(x=Year, y=Halophila, group=Year),fill="#F0E442")+
   ylab(expression(italic("H. stipulacea") ~"Percent Cover (%)"))+
   ylim(0,100)+
-  ggtitle(label=expression(italic("H. stipulacea") ~ "Cover"))+
+  #ggtitle(label=expression(italic("H. stipulacea") ~ "Cover"))+
   scale_x_discrete(labels = yearlabels)+
   theme(panel.background = element_rect(fill = "white", colour = "grey50"),axis.text.x = element_text(size = 8),plot.title = element_text(hjust = 0.5))+#no gridlines or grey background
-   geom_text(aes(family="serif", fontface="plain"),x= "2010" , y=10, label="a")+#add second letter
-   geom_text(aes(family="serif", fontface="plain"),x= "2011" , y=10, label="a")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2012" , y=10, label="a")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2013" , y=10, label="a")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2014" , y=37.5, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2015" , y=97, label="abc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2016" , y=97, label="bc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2017" , y=35, label="ab")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2018" , y=90, label="bc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2019" , y=90, label="bc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2020" , y=90, label="bc")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2021" , y=97, label="c")+
-   geom_text(aes(family="serif", fontface="plain"),x= "2022" , y=85, label="bc")
+   geom_text(aes(family="serif", fontface="plain"),x= 2010 , y=10, label="a")+#add second letter
+   geom_text(aes(family="serif", fontface="plain"),x= 2011 , y=10, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2012 , y=10, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2013 , y=10, label="a")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2014 , y=37.5, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2015 , y=97, label="abc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2016 , y=97, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2017 , y=35, label="ab")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2018 , y=90, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2019 , y=90, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2020 , y=90, label="bc")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2021 , y=97, label="c")+
+   geom_text(aes(family="serif", fontface="plain"),x= 2022 , y=85, label="bc")+
+  scale_x_continuous(breaks = 2009:2022, labels=yearlabels)
 
 Halo
 
@@ -305,7 +309,12 @@ propsea<-avgsea%>%
   pivot_longer(cols=`T. testudinium`:`S. filiforme`,names_to = "Species",values_to = "Proportion")%>%
   ggplot(aes(x=Year, y=Proportion, fill=Species))+
     geom_col(position="stack")+
-  scale_fill_manual(values=c("H. stipulacea"="#F0E442","T. testudinium"="#A36186","H. writii"="#E0AFCA","S. filiforme"="#CC79A7"))+
+  scale_fill_manual(values=c("H. stipulacea" ="#F0E442","T. testudinium"="#A36186","H. writii"="#E0AFCA","S. filiforme"="#CC79A7"),labels = c(
+      "H. stipulacea" = expression(italic("H. stipulacea")),
+      "T. testudinium" = expression(italic("T. testudinium")),
+      "H. writii" = expression(italic("H. writii")),
+      "S. filiforme" = expression(italic("S. filiforme"))
+    ))+
   theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5), legend.position = "bottom")+
   ylab("Seagrass Proportion")
 
@@ -313,7 +322,7 @@ propsea<-avgsea%>%
 
 
 #possible colors
-"#D9A2DC"  "#E0AFCA"  "#CC79CA"  "#AC79CC"  "#CD7A8F"  "#C27E79"  "#E0AFCA" "#EBc9DC" "#A36186"  "#7A4964" "#D9A2DC" "#CC79C8"  "#A16084", "#774761" (deeper) or "#F692CA"
+"#D9A2DC"  "#E0AFCA"  "#CC79CA"  "#AC79CC"  "#CD7A8F"  "#C27E79"  "#E0AFCA" "#EBc9DC" "#A36186"  "#7A4964" "#D9A2DC" "#CC79C8"  "#A16084", "#774761" "#F692CA"
   
 ```
 

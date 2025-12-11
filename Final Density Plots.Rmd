@@ -101,7 +101,7 @@ plotframe <- plotframe%>%
 Gob<-plotframe%>%
     filter(Family=="Gob")%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
   ylab(" ")+#no y axis lables
@@ -131,10 +131,10 @@ Gob
 Lab<-plotframe%>%
     filter(Family=="Lab")%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
-  ylab("Density (fish/100m2)")+
+  ylab("Density (fish/100 m2)")+
   ggtitle("Labridae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
   scale_fill_manual(
@@ -159,7 +159,7 @@ Lab
 Lut<-plotframe%>%
     filter(Family=="Lut")%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
   ylab(" ")+
@@ -187,10 +187,10 @@ Lut
 Ser<-plotframe%>%
     filter(Family=="Ser")%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
-  ylab("Density (fish/100m2)")+
+  ylab("Density (fish/100 m2)")+
   ggtitle("Serranidae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
   scale_fill_manual(
@@ -215,7 +215,7 @@ Ser
 Scar<-plotframe%>%
     filter(Family=="Scar")%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
   ylab(" ")+#n y axis labels
@@ -241,7 +241,7 @@ Scar
 Labm<-plotframe%>%
     filter(Family=="Labm")%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
   ylab(" ")+#no y axis labels
@@ -269,10 +269,10 @@ Labm
 Car<-plotframe%>%
     filter(Family=="Car")%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
-  ylab("Density (fish/100m2)")+
+  ylab("Density (fish/100 m2)")+
   ggtitle("Carangidae")+
   theme(plot.title = element_text(hjust = 0.5))+#how to center the title
   scale_fill_manual(
@@ -299,12 +299,12 @@ Car
 Pom<-plotframe%>%
     filter(Family=="Pom")%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
   ylab(" ")+#n y axis labels
   ggtitle("Pomacentridae")+
-  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom")+#how to center the title
   scale_fill_manual(
   name = "Category",
   values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
@@ -319,12 +319,11 @@ Pom<-plotframe%>%
   "hal"    = expression("Shallow "*italic("H. stipulacea")),
   "native" = "Shallow Mixed"
 ))+
-  theme(legend.position="none")+#removes legend 
     ylim(0,0.12)+#manually set y axis 
   geom_text(aes(family="serif", fontface="plain"),x= "deep" , y=0.09, label="a")+#add first letter, family and fontface change font and remove bold
   geom_text(aes(family="serif", fontface="plain"),x= "hal" , y=0.075, label="b")+#add second letter
   geom_text(aes(family="serif", fontface="plain"), x= "native" , y=0.075, label="a")+#add third letter 
-  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
+  theme(panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))+#no legend, gridlines or grey background, centered title
     ylim(0,0.1)#manually set y axis 
   
 Pom
@@ -334,12 +333,12 @@ Pom
 Mon<-plotframe%>%
     filter(Family=="Mon")%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
   ylab(" ")+#no y axis labels
   ggtitle("Monacanthidae")+
-  theme(plot.title = element_text(hjust = 0.5))+#how to center the title
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")+#how to center the title
  scale_fill_manual(
   name = "Category",
   values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),

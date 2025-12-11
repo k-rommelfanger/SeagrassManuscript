@@ -46,7 +46,7 @@ finaldiversityplots<- finaldiversityplots%>%
 
 RichnessFinal<-finaldiversityplots%>%
     ggplot(names=labels, aes(x=dhcat, y=rsqrt, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
   ylab("Square Root of Species Richness (# unique species)")+#no y axis lables
@@ -69,7 +69,7 @@ RichnessFinal<-finaldiversityplots%>%
   geom_text(aes(family="serif", fontface="plain", label="ab"),x= "hal" , y=4.0)+#add second letter
   geom_text(aes(family="serif", fontface="plain"), x= "native" , y=3.2, label="b")+#add third letter 
     ylim(1,4.5)+#manually set y axis 
-  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no legend, gridlines or grey background, centered title
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 25, hjust = 1))#no legend, gridlines or grey background, centered title
 
   
  
@@ -80,7 +80,7 @@ RichnessFinal
 
 SimpsonsFinal<-finaldiversityplots%>%
     ggplot(names=labels, aes(x=dhcat, y=simpsons, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
   ylab("Simpsons Index of Diversity ")+#no y axis lables
@@ -99,7 +99,7 @@ SimpsonsFinal<-finaldiversityplots%>%
   "hal"    = expression("Shallow "*italic("H. stipulacea")),
   "native" = "Shallow Mixed"
 ))+
-  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no gridlines or grey background, centered title
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 25, hjust = 1))#no gridlines or grey background, centered title
  
 SimpsonsFinal
 
@@ -107,7 +107,7 @@ SimpsonsFinal
 
 DenseFinal<-finaldiversityplots%>%
     ggplot(names=labels, aes(x=dhcat, y=density, fill=dhcat))+
-  geom_boxplot(outlier.shape=2)+#change the shape of outliers
+  geom_boxplot()+#change the shape of outliers
   geom_point(size=0.6)+#adds the points onto plot in single line
   xlab(" ")+#no x axis labels 
   ylab("Fish Density (# individuals/100m^2)")+#no y axis lables
@@ -126,7 +126,7 @@ DenseFinal<-finaldiversityplots%>%
   "hal"    = expression("Shallow "*italic("H. stipulacea")),
   "native" = "Shallow Mixed"
 ))+
-  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50"),plot.title = element_text(hjust = 0.5))#no legend, gridlines or grey background, centered title
+  theme(legend.position="none",panel.background = element_rect(fill = "white", colour = "grey50",),plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 25, hjust = 1))#no legend, gridlines or grey background, centered title
  
 DenseFinal
 
@@ -135,6 +135,8 @@ DenseFinal
 DiversityPlot<-RichnessFinal+DenseFinal+SimpsonsFinal
 
 DiversityPlot
+
+ggsave(filename = "Figure 5.png", plot = DiversityPlot, width = 10, height = 4.5, units = "in",bg="white", dpi = 300)
 ```
 
 

@@ -380,6 +380,36 @@ write.table(speciestable1, "TotalFishTable")
 
 ```
 
+Total number of fish in each size class for each species 
+```{r}
+library(tidyverse)
+
+Fish<- read.csv("Data/AllMerged.csv")#fish families
+Fish<-Fish%>%group_by(Family, Scientific.Names, Size)%>%
+  summarise(n=n())
+
+Fish<-Fish%>%
+  filter(Size!="")%>%
+  pivot_wider(names_from =Size , values_from =n)
+
+
+Fish[is.na(Fish)]<-0
+
+write.table(Fish, file = pipe("pbcopy"), sep = "\t",
+            row.names = FALSE, col.names = TRUE)  
+
+write.table(
+  Fish,
+  file = pipe("pbcopy"),
+  sep = "\t",
+  row.names = FALSE,
+  col.names = TRUE,
+  quote = FALSE
+)
+
+
+```
+
 This  section is the nMDS looking at fish communities at the family level, we split the seagrass into three categories, the first is all transects deeper than 15 meters, this was determined to be the depth that native seagrasses stop growing
 
 We split the seagrass shallower than 15m into two categories 1, where all seagrass present was halophila (<15m,100% halophila), and one where there was native seagrasses present (<15m, native present)

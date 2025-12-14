@@ -542,27 +542,32 @@ finalnMDSplot<-ggplot(transect) +
   theme_classic() +
   labs(color = "dhcat", fill = "dhcat") +
   guides(color = guide_legend(nrow = 1), fill = guide_legend(nrow = 1)) +
-theme(panel.border = element_rect(fill = NA),
-legend.position = "bottom")+ 
-  geom_text(data = fam, aes(x = MDS1, y = MDS2, label = sp), alpha = 1)+
-  scale_fill_manual(
-  name = "Category",
-  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
-  labels = c(
-    "deep"   = expression("Deep "*italic("H. stipulacea")),
-    "hal"    = expression("Shallow "*italic("H. stipulacea")),
-    "native" = "Shallow Mixed"))+
-  scale_color_manual(
-  name = "Category",
-  values = c("deep" = "#56B4E9", "hal" = "#F0E442", "native" = "#CC79A7"),
-  labels = c(
-    "deep"   = expression("Deep "*italic("H. stipulacea")),
-    "hal"    = expression("Shallow "*italic("H. stipulacea")),
-    "native" = "Shallow Mixed"))+
-  annotate(geom="text", x=1.5, y=1.2, label="stress=0.234")
+theme(panel.border = element_rect(fill = NA), legend.position = "bottom")+ 
+ geom_text(data = subset(fam,!sp %in% c("Aulostomidae", "Acanthuridae")), aes(x = MDS1, y = MDS2, label = sp), alpha = 1)+#adds species labels to plot
+  geom_text(
+  data = subset(fam, sp == "Aulostomidae"),
+  aes(x = MDS1, y = MDS2, label = sp),
+  nudge_y = 0.05,
+  alpha = 1
+)+
+  geom_text(
+  data = subset(fam, sp == "Acanthuridae"),
+  aes(x = MDS1, y = MDS2, label = sp),
+  nudge_y = -0.05,
+  alpha = 1
+) +
+  scale_x_continuous(expand=expansion(mult=0.12))+
+  scale_fill_manual(name = "Category", labels = c(expression("Deep"~italic("H. Stipulacea")), expression("Shallow"~italic("H. Stipulacea")),"Shallow Mixed"),values = c("#56B4E9","#F0E442","#CC79A7"))+
+  scale_color_manual(name = "Category", labels =c(expression("Deep"~italic("H. Stipulacea")), expression("Shallow"~italic("H. Stipulacea")),"Shallow Mixed"), values = c("#56B4E9","#F0E442","#CC79A7"))+
+  annotate(geom="text", x=1.5, y=1.2, label="stress=0.234",fontface="bold")#add stress to plot
 
 
 finalnMDSplot
+
+
+#saving plot
+
+ggsave("Figure5.png", finalnMDSplot, width = 10, height = 6, dpi = 300)
 
 #very cool function, check our colors for color blind friendly
 cvdPlot(finalnMDSplot)
